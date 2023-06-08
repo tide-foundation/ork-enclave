@@ -18,7 +18,6 @@
 import Point from "../Ed25519/point.js"
 import PrismFlow from "../Flow/Prism.js"
 import { SHA256_Digest, SHA512_Digest } from "../Tools/Hash.js"
-import VendorClient from "../Clients/VendorClient.js"
 import { BigIntFromByteArray, BigIntToByteArray, Bytes2Hex, mod, mod_inv, RandomBigInt } from "../Tools/Utils.js"
 import dKeyGenerationFlow from "../Flow/dKeyGenerationFlow.js"
 import { createAESKey, encryptData } from "../Tools/AES.js"
