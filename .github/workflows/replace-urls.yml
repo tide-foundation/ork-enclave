@@ -15,8 +15,7 @@ jobs:
 
     - name: Replace URLs
       run: |
-        pwd
-        sed -i 's/host.docker.internal:2000/new-simulator.australiaeast.cloudapp.azure.com/g' ../../js/main.js
+        sed -i 's/host.docker.internal:2000/new-simulator.australiaeast.cloudapp.azure.com/g' ./js/main.js
 
     - name: Commit and push
       run: |
