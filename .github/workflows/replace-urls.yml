@@ -1,0 +1,27 @@
+name: Sync Branches
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Replace URLs
+      run: |
+        sed -i 's/host.docker.internal:2000/new-simulator.australiaeast.cloudapp.azure.com/g' ../../js/main.js
+
+    - name: Commit and push
+      run: |
+        git config --global user.email "actions@github.com"
+        git config --global user.name "GitHub Action"
+        git checkout main
+        git add .
+        git commit -m "Update URLs"
+        git push
