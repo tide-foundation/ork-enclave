@@ -186,7 +186,7 @@ var activeOrks = [];
             cvkOrkInfo: cvkOrkInfo,
             simulatorUrl: 'http://host.docker.internal:2000/'
         }
-
+        const params = new URLSearchParams(window.location.search);
         var signup = new SignUp(config);
         try{
             const jwt = await signup.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign up flow
