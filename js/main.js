@@ -127,7 +127,7 @@ var activeOrks = [];
     async function getAllOrks() {
 
         var config = {
-            urls: ["https://new-simulator.australiaeast.cloudapp.azure.com"],
+            urls: ["https://host.docker.internal:2000"],
         }
         const flow = new SimulatorFlow(config);
 
@@ -153,7 +153,7 @@ var activeOrks = [];
     async function signin(user, pass) {
         $('#loader').show();
         var config = {
-            simulatorUrl: 'https://new-simulator.australiaeast.cloudapp.azure.com/'
+            simulatorUrl: 'https://host.docker.internal:2000/'
         } 
         const params = new URLSearchParams(window.location.search);
         var signin = new SignIn(config);
@@ -184,7 +184,7 @@ var activeOrks = [];
         var config = {
             cmkOrkInfo: cmkOrkInfo,
             cvkOrkInfo: cvkOrkInfo,
-            simulatorUrl: 'https://new-simulator.australiaeast.cloudapp.azure.com/'
+            simulatorUrl: 'https://host.docker.internal:2000/'
         }
 
         var signup = new SignUp(config);
