@@ -17,7 +17,7 @@
 
 import { SignIn, SimulatorFlow, SignUp, Point } from "../modules/TideJS/index.js";
 
-const activeOrks = [];
+var activeOrks = [];
 
 (function ($) {
     "use strict";
@@ -157,9 +157,16 @@ const activeOrks = [];
         } 
         const params = new URLSearchParams(window.location.search);
         var signin = new SignIn(config);
-        const jwt = await signin.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign in flow
-        window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
-        window.self.close();
+        try{
+            const jwt = await signin.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign in flow
+            window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
+            window.self.close();
+        }catch(e){
+            $('#alert-si').text(e);
+            $('#alert-si').show();
+            $('#submit-btn-si').prop('disabled', false);
+            $('#loader').hide();
+        }
     }
 
     async function signup(user, pass, selectedOrks) {
@@ -181,9 +188,17 @@ const activeOrks = [];
         }
 
         var signup = new SignUp(config);
-        const jwt = await signup.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign up flow
-        window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
-        window.self.close();
+        try{
+            const jwt = await signup.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign up flow
+            window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
+            window.self.close();
+        }catch(e){
+            $('#alert-su').text(e);
+            $('#alert-su').show();
+            $('#submit-btn-su').prop('disabled', false);
+            $('#loader-su').hide();
+        }
+        
     }
 
     
