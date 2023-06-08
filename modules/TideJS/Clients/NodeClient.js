@@ -40,7 +40,7 @@ export default class NodeClient extends ClientBase {
         const data = this._createFormData({ 
             'gBlurUser': gBlurUser.toBase64(), 
             'gBlurPass': gBlurPass.toBase64(),
-            'testPrismAuth': testPrismAuth == null ? null : testPrismAuth.toBase64()
+            'testPrismAuth': testPrismAuth == null ? '' : testPrismAuth.toBase64()
         })
         const response = await this._post(`/CMK/Convert?uid=${uid}`, data)
         const responseData = await this._handleError(response, "Convert CMK/Prism");
@@ -58,7 +58,7 @@ export default class NodeClient extends ClientBase {
         const data = this._createFormData({ 
             'decryptedChallenge': decryptedChallenge, 
             'encAuthRequest': encryptedAuthRequest,
-            'testPrismAuth': testPrismAuth == null ? null : testPrismAuth.toBase64()
+            'testPrismAuth': testPrismAuth == null ? '' : testPrismAuth.toBase64()
         })
         const response = await this._post(`/CMK/Authenticate?uid=${uid}`, data)
 
