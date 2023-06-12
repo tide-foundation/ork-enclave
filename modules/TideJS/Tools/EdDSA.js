@@ -75,7 +75,7 @@ export async function sign(msg, priv){
 /**
  * Verify a EdDSA signature, given a signature, public key and message.
  * @param {string} sig In base64
- * @param {string | PublicKey} pub 
+ * @param {string | Point} pub 
  * @param {string | Uint8Array} msg 
  * @returns Boolean dependant on whether the signature is valid or not.
  */
@@ -90,13 +90,14 @@ export async function verify(sig, pub, msg){
     
         const R = Point.from(sig_bytes.slice(0, 32));
         const S = BigIntFromByteArray(sig_bytes.slice(-32));
-        if(S <= BigInt(0) || S >= Point.order) return false;
+        if(S <= BigInt(0) || S >= Point.order){
+            return false;
+        } 
     
         if(typeof(pub) == 'string') pub = Point.fromB64(pub);
     
         const to_hash = ConcatUint8Arrays([R.toArray(), pub.toArray(), msg]);
-        const k = BigIntFromByteArray(await SHA512_Digest(to_hash));
-    
+        const k = mod(BigIntFromByteArray(await SHA512_Digest(to_hash)));
         return Point.g.times(S).times(BigInt(8)).isEqual(R.times(BigInt(8)).add(pub.times(k).times(BigInt(8))));
     }catch{
         return false // very strict indeed

@@ -67,7 +67,7 @@ export async function CmkConvertReply(id, convertResponses, lis, prismAuthis, gC
     const encAuthRequests = await Promise.all(pre_encAuthRequests);
 
     // Prepare a JWT with 30 min expiration date
-    const jwt = TideJWT.new(id, 30, gSessKeyPub);
+    const jwt = TideJWT.new(VUID, 30, gSessKeyPub);
 
     const data_for_PreSignInCVK = {
         'prismAuthis': prismAuthis,
@@ -88,7 +88,7 @@ export async function CmkConvertReply(id, convertResponses, lis, prismAuthis, gC
  * @param {Point[]} vgORKi
  */
 export async function PreSignInCVKReply(encSig, encCVKRi, data_for_PreSignInCVK, vgORKi){
-    const pre_Si = encSig.map(async (enc, i) => BigIntFromByteArray(StringToUint8Array(await AES.decryptData(enc, data_for_PreSignInCVK.prismAuthis[i]))));
+    const pre_Si = encSig.map(async (enc, i) => BigInt(await AES.decryptData(enc, data_for_PreSignInCVK.prismAuthis[i])));
     const Si = await Promise.all(pre_Si);
 
     const S = mod(Si.reduce((sum, next) => sum + next) * mod_inv(data_for_PreSignInCVK.r4));
@@ -115,11 +115,12 @@ export async function PreSignInCVKReply(encSig, encCVKRi, data_for_PreSignInCVK,
  * @param {Point} gCVKR 
  * @param {string} jwt 
  * @param {Uint8Array[]} ECDHi 
+ * @param {bigint[]} vLis
  */
-export async function SignInCVKReply(encCVKSign, gCVKR, jwt, ECDHi){
-    const pre_CVKSi = encCVKSign.map(async (enc, i) => BigIntFromByteArray(StringToUint8Array(await AES.decryptData(enc, ECDHi[i]))));
+export async function SignInCVKReply(encCVKSign, gCVKR, jwt, ECDHi, vLis){
+    const pre_CVKSi = encCVKSign.map(async (enc, i) => BigInt(await AES.decryptData(enc, ECDHi[i])));
     const CVKSi = await Promise.all(pre_CVKSi);
-    const CVKS = mod(CVKSi.reduce((sum, next) => sum + next));
+    const CVKS = mod(CVKSi.reduce((sum, next, i) => sum + (next * vLis[i]), BigInt(0)));
 
     return TideJWT.addSignature(jwt, CVKS, gCVKR);
 }

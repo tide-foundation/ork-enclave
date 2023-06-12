@@ -59,7 +59,7 @@ export default class SignIn {
         // Putting this up here to speed things up using await
         const simClient = new SimulatorClient(this.simulatorUrl);
         const pre_orkInfo = simClient.GetUserORKs(uid);
-        const pre_cmkPub = simClient.GetCMKPublic(uid);
+        const pre_cmkPub = simClient.GetKeyPublic(uid);
 
         const gUser = await Point.fromString(username.toLowerCase() + gVVK);
         const gBlurUser = gUser.times(r2);

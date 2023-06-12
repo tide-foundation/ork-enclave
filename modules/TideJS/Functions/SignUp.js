@@ -87,7 +87,7 @@ export default class SignUp {
         const cvkSendShardData = await cvkGenFlow.SendShard(VUID, cvkGenShardData.sortedShares, cvkGenShardData.R2, [], cvkGenShardData.timestamp, gCMKAuth);
 
         // Test sign in
-        const jwt = await this.testSignIn(username, password, Point.fromB64(gVVK), cmkSendShardData.GK1, cvkSendShardData.GK1);
+        const jwt = await this.testSignIn(username, password, gVVK, cmkSendShardData.GK1, cvkSendShardData.GK1, gPRISMAuth);
 
         const pre_cmkCommit = cmkGenFlow.Commit(uid, cmkSendShardData.S, cmkSendShardData.encCommitStatei, gPRISMAuth);
         const pre_cvkCommit = cvkGenFlow.Commit(VUID, cvkSendShardData.S, cvkSendShardData.encCommitStatei);
@@ -102,12 +102,13 @@ export default class SignUp {
      * 
      * @param {string} username 
      * @param {string} password 
-     * @param {Point} gVVK 
+     * @param {string} gVVK 
      * @param {Point} cmkPub 
      * @param {Point} cvkPub 
+     * @param {Point} gPRISMAuth
      * @returns 
      */
-    async testSignIn(username, password, gVVK, cmkPub, cvkPub){
+    async testSignIn(username, password, gVVK, cmkPub, cvkPub, gPRISMAuth){
         const startTime = BigInt(Math.floor(Date.now() / 1000));
         const r1 = RandomBigInt();
         const r2 = RandomBigInt();
@@ -115,18 +116,17 @@ export default class SignUp {
         const uid = Bytes2Hex(await SHA256_Digest(username.toLowerCase()));
 
 
-        const gUser = await Point.fromString(username.toLowerCase() + gVVK.toBase64());
+        const gUser = await Point.fromString(username.toLowerCase() + gVVK);
         const gBlurUser = gUser.times(r2);
         //convert password to point
         const gPass = await Point.fromString(password);
         const gBlurPass = gPass.times(r1);
 
-
         const authFlow = new dKeyAuthenticationFlow(this.cmkOrkInfo);
-        const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub);
+        const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gPRISMAuth);
         
         authFlow.CVKorks = this.cvkOrkInfo;
-        const authData = await authFlow.Authenticate_and_PreSignInCVK(uid, convertData.VUID, convertData.decChallengei, convertData.encAuthRequests, convertData.gSessKeyPub, convertData.data_for_PreSignInCVK);
+        const authData = await authFlow.Authenticate_and_PreSignInCVK(uid, convertData.VUID, convertData.decChallengei, convertData.encAuthRequests, convertData.gSessKeyPub, convertData.data_for_PreSignInCVK, gPRISMAuth);
 
         const jwt = await authFlow.SignInCVK(convertData.VUID, convertData.jwt, authData.vlis, convertData.timestamp2, convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi);
         if(!(await TideJWT.verify(jwt, cvkPub))) throw Error("Test sign in failed");
