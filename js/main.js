@@ -160,7 +160,7 @@ var activeOrks = [];
         try{
             const jwt = await signin.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign in flow
             window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
-            window.self.close();
+            //window.self.close();
         }catch(e){
             $('#alert-si').text(e);
             $('#alert-si').show();
@@ -191,7 +191,7 @@ var activeOrks = [];
         try{
             const jwt = await signup.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign up flow
             window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
-            window.self.close();
+            //window.self.close();
         }catch(e){
             $('#alert-su').text(e);
             $('#alert-su').show();
