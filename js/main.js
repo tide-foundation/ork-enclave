@@ -190,10 +190,6 @@ var activeOrks = [];
         const params = new URLSearchParams(window.location.search);
         var signup = new SignUp(config);
         try{
-            var sig = params.get("vendorUrlSig")
-            var pub =  params.get("vendorPublic")
-            var url = params.get("vendorUrl");
-            
             if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
             const jwt = await signup.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign up flow
             window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
