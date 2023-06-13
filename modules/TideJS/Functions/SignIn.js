@@ -20,7 +20,6 @@ import PrismFlow from "../Flow/Prism.js"
 import { SHA256_Digest } from "../Tools/Hash.js"
 import { BigIntToByteArray, Bytes2Hex, RandomBigInt, bytesToBase64, getCSharpTime } from "../Tools/Utils.js"
 import SimulatorClient from "../Clients/SimulatorClient.js"
-import VendorClient from "../Clients/VendorClient.js"
 import NodeClient from "../Clients/NodeClient.js"
 import { decryptData } from "../Tools/AES.js"
 import dKeyAuthenticationFlow from "../Flow/dKeyAuthenticationFlow.js"
@@ -60,7 +59,7 @@ export default class SignIn {
         // Putting this up here to speed things up using await
         const simClient = new SimulatorClient(this.simulatorUrl);
         const pre_orkInfo = simClient.GetUserORKs(uid);
-        const pre_cmkPub = simClient.GetCMKPublic(uid);
+        const pre_cmkPub = simClient.GetKeyPublic(uid);
 
         const gUser = await Point.fromString(username.toLowerCase() + gVVK);
         const gBlurUser = gUser.times(r2);

@@ -15,7 +15,7 @@
 // If not, see https://tide.org/licenses_tcoc2-0-0-en
 //
 
-import { SignIn, SimulatorFlow, SignUp, Point } from "../modules/TideJS/index.js";
+import { SignIn, SimulatorFlow, SignUp, EdDSA, Point } from "../modules/TideJS/index.js";
 
 var activeOrks = [];
 
@@ -127,7 +127,7 @@ var activeOrks = [];
     async function getAllOrks() {
 
         var config = {
-            urls: ["https://new-simulator.australiaeast.cloudapp.azure.com"],
+            urls: ["http://host.docker.internal:2000"],
         }
         const flow = new SimulatorFlow(config);
 
@@ -153,11 +153,12 @@ var activeOrks = [];
     async function signin(user, pass) {
         $('#loader').show();
         var config = {
-            simulatorUrl: 'https://new-simulator.australiaeast.cloudapp.azure.com/'
+            simulatorUrl: 'http://host.docker.internal:2000/'
         } 
         const params = new URLSearchParams(window.location.search);
         var signin = new SignIn(config);
         try{
+            if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
             const jwt = await signin.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign in flow
             window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
             window.self.close();
@@ -184,11 +185,12 @@ var activeOrks = [];
         var config = {
             cmkOrkInfo: cmkOrkInfo,
             cvkOrkInfo: cvkOrkInfo,
-            simulatorUrl: 'https://new-simulator.australiaeast.cloudapp.azure.com/'
+            simulatorUrl: 'http://host.docker.internal:2000/'
         }
-
+        const params = new URLSearchParams(window.location.search);
         var signup = new SignUp(config);
         try{
+            if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
             const jwt = await signup.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign up flow
             window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
             window.self.close();

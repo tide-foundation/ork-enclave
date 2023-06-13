@@ -57,11 +57,11 @@ export default class SimulatorClient extends ClientBase {
      * @param {string} uid 
      * @returns {Promise<Point>}
      */
-    async GetCMKPublic(uid){
+    async GetKeyPublic(uid){
         const response = await this._get(`keyentry/${uid}`);
         const responseData = await this._handleErrorSimulator(response);
         const resp_obj = JSON.parse(responseData);
-        return Point.fromB64(resp_obj.Public);
+        return Point.fromB64(resp_obj.public);
     }
 
      /**

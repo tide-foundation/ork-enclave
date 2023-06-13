@@ -40,7 +40,7 @@ export default class NodeClient extends ClientBase {
         const data = this._createFormData({ 
             'gBlurUser': gBlurUser.toBase64(), 
             'gBlurPass': gBlurPass.toBase64(),
-            'testPrismAuth': testPrismAuth == null ? null : testPrismAuth.toBase64()
+            'testPrismAuth': testPrismAuth == null ? '' : testPrismAuth.toBase64()
         })
         const response = await this._post(`/CMK/Convert?uid=${uid}`, data)
         const responseData = await this._handleError(response, "Convert CMK/Prism");
@@ -58,7 +58,7 @@ export default class NodeClient extends ClientBase {
         const data = this._createFormData({ 
             'decryptedChallenge': decryptedChallenge, 
             'encAuthRequest': encryptedAuthRequest,
-            'testPrismAuth': testPrismAuth == null ? null : testPrismAuth.toBase64()
+            'testPrismAuth': testPrismAuth == null ? '' : testPrismAuth.toBase64()
         })
         const response = await this._post(`/CMK/Authenticate?uid=${uid}`, data)
 
@@ -135,7 +135,7 @@ export default class NodeClient extends ClientBase {
                 'yijCipher': shares, 
                 'R2': R2.toBase64(),
                 'gMultipliers': gMultipliers.map(p => p == null ? "" : p.toBase64()),
-                'auth': auth == null ? null : auth.toBase64()
+                'auth': auth == null ? '' : auth.toBase64()
             });
         const response = await this._post(`/Create/SendShard?uid=${uid}`, data);
 
@@ -155,7 +155,7 @@ export default class NodeClient extends ClientBase {
             {
                 'S': S.toString(),
                 'EncCommitStatei': EncCommitStatei,
-                'auth': auth == null ? null : auth.toBase64()
+                'auth': auth == null ? '' : auth.toBase64()
             }
         );
         const response = await this._post(`/Create/Commit?uid=${uid}`, data);

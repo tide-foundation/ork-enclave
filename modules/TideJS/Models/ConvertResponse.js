@@ -14,7 +14,7 @@ export default class ConvertResponse{
     static from(data){
         const obj = JSON.parse(data);
         const timestampi = BigInt(obj.Timestampi);
-        const gBlurPassPRISMi = Point.fromB64(obj.GBlurPassPRISMi)
+        const gBlurPassPRISMi = Point.fromB64(obj.GBlurPassPrism)
         return new ConvertResponse(obj.EncryptedData, gBlurPassPRISMi, timestampi);
     }
 }

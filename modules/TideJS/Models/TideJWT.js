@@ -23,6 +23,11 @@ export default class TideJWT{
         return jwt; // this jwt has no signature as it was just created
     }
 
+    static getUID(jwt){
+        var p = jwt.split(".")[1];
+        return JSON.parse(atob(base64UrlToBase64(p))).uid;
+    }
+
     /**
      * 
      * @param {string} jwt 
@@ -39,7 +44,7 @@ export default class TideJWT{
      */
     static async verify(jwt, pub){
         const strings = jwt.split(".");
-        const dataToVerify = base64ToBytes(base64UrlToBase64(strings[0] + "." + strings[1]));
+        const dataToVerify = StringToUint8Array(strings[0] + "." + strings[1]);
         const sig = base64UrlToBase64(strings[2]);
         return await EdDSA.verify(sig, pub, dataToVerify);
     }
