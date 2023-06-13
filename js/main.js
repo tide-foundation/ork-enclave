@@ -15,7 +15,7 @@
 // If not, see https://tide.org/licenses_tcoc2-0-0-en
 //
 
-import { SignIn, SimulatorFlow, SignUp, Point } from "../modules/TideJS/index.js";
+import { SignIn, SimulatorFlow, SignUp, EdDSA, Point } from "../modules/TideJS/index.js";
 
 var activeOrks = [];
 
@@ -159,6 +159,7 @@ var activeOrks = [];
         var signin = new SignIn(config);
         try{
             const jwt = await signin.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign in flow
+            if(!(await EdDSA.verify(params.get("vendorRedirectUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
             window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
             window.self.close();
         }catch(e){
@@ -190,8 +191,8 @@ var activeOrks = [];
         var signup = new SignUp(config);
         try{
             const jwt = await signup.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign up flow
-            var u = params.get("vendorUrl");
-            window.opener.postMessage(jwt, u); // post jwt to vendor window which opened this enclave
+            if(!(await EdDSA.verify(params.get("vendorRedirectUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
+            window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
             window.self.close();
         }catch(e){
             $('#alert-su').text(e);
