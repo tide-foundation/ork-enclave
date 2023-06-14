@@ -113,8 +113,7 @@ export function StringToUint8Array(string) {
  * @returns 
  */
 export function base64ToBase64Url(base64) {
-    // Replace base64 characters with URL safe characters
-    return base64.replace('+', '-').replace('/', '_').replace(/=+$/, '');
+    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 /** 
