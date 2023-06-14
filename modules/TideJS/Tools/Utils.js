@@ -15,6 +15,7 @@
 // If not, see https://tide.org/licenses_tcoc2-0-0-en
 //
 
+//t
 import { SHA256_Digest } from "./Hash.js";
 import Point from "../Ed25519/point.js";
 
