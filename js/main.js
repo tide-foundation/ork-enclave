@@ -127,7 +127,7 @@ var activeOrks = [];
     async function getAllOrks() {
 
         var config = {
-            urls: ["https://new-simulator.australiaeast.cloudapp.azure.com"],
+            urls: ["https://new-simulator.australiaeast.cloudapp.azure.com/"],
         }
         const flow = new SimulatorFlow(config);
 

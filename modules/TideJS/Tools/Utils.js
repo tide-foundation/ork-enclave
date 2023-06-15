@@ -101,6 +101,21 @@ export function ConcatUint8Arrays(arrays) {
 }
 
 /**
+ * @param {Uint8Array} array1 
+ * @param {Uint8Array} array2 
+ */
+export function XOR(array1, array2){
+	if (array1.length !== array2.length) {
+        throw new Error('Arrays have different lengths, cannot XOR them.');
+    }
+    let result = new Uint8Array(array1.length);
+    for (let i = 0; i < array1.length; i++) {
+        result[i] = array1[i] ^ array2[i];
+    }
+    return result;
+}
+
+/**
  * @param {string} string 
  */
 export function StringToUint8Array(string) {
