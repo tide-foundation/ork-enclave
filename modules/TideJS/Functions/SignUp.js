@@ -24,6 +24,7 @@ import { createAESKey, encryptData } from "../Tools/AES.js"
 import SignIn from "./SignIn.js"
 import dKeyAuthenticationFlow from "../Flow/dKeyAuthenticationFlow.js"
 import TideJWT from "../Models/TideJWT.js"
+import dDecryptionTestFlow from "../Flow/dDecryptionTestFlow.js"
 
 export default class SignUp {
     /**
@@ -61,8 +62,9 @@ export default class SignUp {
      * @param {string} username 
      * @param {string} password 
      * @param {string} gVVK The vendor's public key
+     * @param {string} vendorUrl
      */
-    async start(username, password, gVVK) {
+    async start(username, password, gVVK, vendorUrl) {
         //hash username
         const uid = Bytes2Hex(await SHA256_Digest(username.toLowerCase()));
 
@@ -89,6 +91,11 @@ export default class SignUp {
         // Test sign in
         const jwt = await this.testSignIn(username, password, gVVK, cmkSendShardData.GK1, cvkSendShardData.GK1, gPRISMAuth);
 
+        // Test dDecrypt
+        const dDecryptFlow = new dDecryptionTestFlow(vendorUrl, Point.fromB64(gVVK), cvkSendShardData.GK1, jwt);
+        await dDecryptFlow.startTest();
+
+        // Commit newly generated keys
         const pre_cmkCommit = cmkGenFlow.Commit(uid, cmkSendShardData.S, cmkSendShardData.encCommitStatei, gPRISMAuth);
         const pre_cvkCommit = cvkGenFlow.Commit(VUID, cvkSendShardData.S, cvkSendShardData.encCommitStatei);
 
