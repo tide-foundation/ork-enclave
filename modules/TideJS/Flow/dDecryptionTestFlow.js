@@ -1,10 +1,11 @@
+import VendorClient from "../Clients/VendorClient";
 import Point from "../Ed25519/point";
 import { encryptData } from "../Tools/AES";
 import { encrypt_ElGamal } from "../Tools/ElGamal";
 import { SHA256_Digest } from "../Tools/Hash";
 import { ConcatUint8Arrays, RandomBigInt, base64ToBytes, bytesToBase64 } from "../Tools/Utils";
 
-export default class dDecryptionFlow{
+export default class dDecryptionTestFlow{
     /**
      * @param {string} vendorUrl 
      * @param {Point} vendorPublic
@@ -23,5 +24,8 @@ export default class dDecryptionFlow{
         window.crypto.getRandomValues(challenge);
         const encryptedByGCVK = await encrypt_ElGamal(challenge, this.userPublic);
         const encryptedByGVVK = await encrypt_ElGamal(challenge, this.vendorPublic);
+
+        const vendorClient = new VendorClient(this.vendorUrl);
+        await vendorClient.DecryptionTest(encryptedByGCVK, encryptedByGVVK, this.jwt);
     }
 }

@@ -17,11 +17,12 @@ export default class VendorClient extends ClientBase{
      */
     async DecryptionTest(encryptedByGCVK, encryptedByGVVK, jwt){
         const data = this._createFormData({ 
-            'encryptedByGCVK': encryptedData, 
-            'encryptedByGVVK': gSessKeyPub.toBase64(),
+            'encryptedByGCVK': encryptedByGCVK, 
+            'encryptedByGVVK': encryptedByGVVK,
             'jwt': jwt
         });
-        const response = this._post(`tidetest`, data);
-
+        const response = await this._post(`tide/decryptiontest`, data);
+        const decryptionTest = await this._handleError(response, "Decryption Test");
+        if(decryptionTest !== "Test Passed") throw Error("Decryption Test: Failed")
     }
 }

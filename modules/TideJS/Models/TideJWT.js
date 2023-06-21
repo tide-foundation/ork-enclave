@@ -8,8 +8,9 @@ export default class TideJWT{
      * @param {string} uid 
      * @param {number} minutesToExpiry 
      * @param {Point} gSessKeyPub
+     * @param {string} gVVK
      */
-    static new(uid, minutesToExpiry, gSessKeyPub){
+    static new(uid, minutesToExpiry, gSessKeyPub, gVVK){
         const header = {
             'alg': "EdDSA",
             'typ': "JWT"
@@ -17,7 +18,8 @@ export default class TideJWT{
         const payload = {
             'uid': uid,
             'exp': Math.floor(Date.now() / 1000) + (minutesToExpiry * 60),
-            'gSessKeyPub': gSessKeyPub.toBase64()
+            'gSessKeyPub': gSessKeyPub.toBase64(),
+            'gVVK': gVVK
         }
         const jwt = base64ToBase64Url(bytesToBase64(StringToUint8Array(JSON.stringify(header)))) + "." + base64ToBase64Url(bytesToBase64(StringToUint8Array(JSON.stringify(payload))));
         return jwt; // this jwt has no signature as it was just created
