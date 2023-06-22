@@ -1,5 +1,5 @@
-import Point from "../Ed25519/point";
-import ClientBase from "./ClientBase";
+import Point from "../Ed25519/point.js";
+import ClientBase from "./ClientBase.js";
 
 export default class VendorClient extends ClientBase{
     /**

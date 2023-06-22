@@ -1,5 +1,5 @@
-import Point from "../Ed25519/point";
-import { SHA256_Digest } from "./Hash";
+import Point from "../Ed25519/point.js";
+import { SHA256_Digest } from "./Hash.js";
 import { ConcatUint8Arrays, RandomBigInt, XOR, bytesToBase64 } from "./Utils";
 
 /**
