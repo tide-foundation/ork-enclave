@@ -64,7 +64,7 @@ export default class SignUp {
      * @param {string} gVVK The vendor's public key
      * @param {string} vendorUrl
      */
-    async start(username, password, gVVK, vendorUrl) {
+    async start(username, password, gVVK, vendorUrl) { // should we implement a vendor object where the VVK signs the vendorUrl + homeOrk url?
         //hash username
         const uid = Bytes2Hex(await SHA256_Digest(username.toLowerCase()));
 
@@ -90,6 +90,9 @@ export default class SignUp {
 
         // Test sign in
         const jwt = await this.testSignIn(username, password, gVVK, cmkSendShardData.GK1, cvkSendShardData.GK1, gPRISMAuth);
+
+        // Send PreCommited DNS Entry for CVK Key to Random CVK ork (CMK Orks will do CMK DNS entry themselves) 
+        
 
         // Test dDecrypt
         const dDecryptFlow = new dDecryptionTestFlow(vendorUrl, Point.fromB64(gVVK), cvkSendShardData.GK1, jwt);
