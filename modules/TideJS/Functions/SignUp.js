@@ -130,7 +130,7 @@ export default class SignUp {
         const gBlurPass = gPass.times(r1);
 
         const authFlow = new dKeyAuthenticationFlow(this.cmkOrkInfo);
-        const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gPRISMAuth);
+        const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK, gPRISMAuth);
         
         authFlow.CVKorks = this.cvkOrkInfo;
         const authData = await authFlow.Authenticate_and_PreSignInCVK(uid, convertData.VUID, convertData.decChallengei, convertData.encAuthRequests, convertData.gSessKeyPub, convertData.data_for_PreSignInCVK, gPRISMAuth);

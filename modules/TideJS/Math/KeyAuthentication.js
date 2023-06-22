@@ -38,8 +38,9 @@ export async function PrismConvertReply(convertResponses, lis, mgORKi, r1, start
  * @param {Point} gCMK 
  * @param {bigint} r2 
  * @param {bigint} deltaTime
+ * @param {string} gVVK
  */
-export async function CmkConvertReply(id, convertResponses, lis, prismAuthis, gCMK, r2, deltaTime){
+export async function CmkConvertReply(id, convertResponses, lis, prismAuthis, gCMK, r2, deltaTime, gVVK){
     const pre_decData = convertResponses.map(async (resp, i) => EncryptedConvertResponse.from(await AES.decryptData(resp.EncryptedData, prismAuthis[i])));
     const decData = await Promise.all(pre_decData);
 
@@ -67,7 +68,7 @@ export async function CmkConvertReply(id, convertResponses, lis, prismAuthis, gC
     const encAuthRequests = await Promise.all(pre_encAuthRequests);
 
     // Prepare a JWT with 30 min expiration date
-    const jwt = TideJWT.new(VUID, 30, gSessKeyPub);
+    const jwt = TideJWT.new(VUID, 30, gSessKeyPub, gVVK);
 
     const data_for_PreSignInCVK = {
         'prismAuthis': prismAuthis,

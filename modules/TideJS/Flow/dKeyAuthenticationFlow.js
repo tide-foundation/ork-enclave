@@ -25,9 +25,10 @@ export default class dKeyAuthenticationFlow{
      * @param {bigint} r2
      * @param {bigint} startTime
      * @param {Point} gCMK
+     * @param {string} gVVK
      * @param {Point} testGPrismAuth
      */
-    async Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, gCMK, testGPrismAuth=null){
+    async Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, gCMK, gVVK, testGPrismAuth=null){
         const clients = this.CMKorks.map(ork => new NodeClient(ork[1])) // create node clients
 
         // Here we also find out which ORKs are up
@@ -53,7 +54,7 @@ export default class dKeyAuthenticationFlow{
         const ConvertResponses = settledPromises.filter(promise => promise.status === "fulfilled").map(promise => promise.value); // .value will exist here as we have filtered the responses above
         
         const {prismAuthis, deltaTime} = await PrismConvertReply(ConvertResponses, lis, this.CMKorks.map(c => c[2]), r1, startTime);
-        return await CmkConvertReply(uid, ConvertResponses, lis, prismAuthis, gCMK, r2, deltaTime);
+        return await CmkConvertReply(uid, ConvertResponses, lis, prismAuthis, gCMK, r2, deltaTime, gVVK);
     }
 
     /**

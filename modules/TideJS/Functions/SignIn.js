@@ -72,7 +72,7 @@ export default class SignIn {
         const cmkPub = await pre_cmkPub;
 
         const authFlow = new dKeyAuthenticationFlow(cmkOrkInfo);
-        const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub);
+        const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK);
         
         const vOrks = await simClient.GetUserORKs(convertData.VUID);
         authFlow.CVKorks = vOrks;
