@@ -127,7 +127,7 @@ var activeOrks = [];
     async function getAllOrks() {
 
         var config = {
-            urls: ["http://host.docker.internal:2000/"],
+            urls: ["http://host.docker.internal:2000"],
         }
         const flow = new SimulatorFlow(config);
 
