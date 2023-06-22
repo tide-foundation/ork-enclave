@@ -1,6 +1,6 @@
 import Point from "../Ed25519/point.js";
 import { SHA256_Digest } from "./Hash.js";
-import { ConcatUint8Arrays, RandomBigInt, XOR, bytesToBase64 } from "./Utils";
+import { ConcatUint8Arrays, RandomBigInt, XOR, bytesToBase64 } from "./Utils.js";
 
 /**
  * 
