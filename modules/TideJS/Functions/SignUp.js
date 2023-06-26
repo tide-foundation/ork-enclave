@@ -135,7 +135,7 @@ export default class SignUp {
         authFlow.CVKorks = this.cvkOrkInfo;
         const authData = await authFlow.Authenticate_and_PreSignInCVK(uid, convertData.VUID, convertData.decChallengei, convertData.encAuthRequests, convertData.gSessKeyPub, convertData.data_for_PreSignInCVK, gPRISMAuth);
 
-        const jwt = await authFlow.SignInCVK(convertData.VUID, convertData.jwt, authData.vlis, convertData.timestamp2, convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi);
+        const jwt = await authFlow.SignInCVK(convertData.VUID, convertData.jwt, authData.vlis, convertData.timestamp2, convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, true);
         if(!(await TideJWT.verify(jwt, cvkPub))) throw Error("Test sign in failed");
         return jwt;
     }
