@@ -146,15 +146,13 @@ export default class NodeClient extends ClientBase {
 
     /**
      * @param {string} uid 
-     * @param {bigint} S 
-     * @param {string} EncCommitStatei 
+     * @param {bigint} S  
      * @param {Point} auth
      */
-    async Commit(uid, S, EncCommitStatei, auth) {
+    async Commit(uid, S, auth) {
         const data = this._createFormData(
             {
                 'S': S.toString(),
-                'EncCommitStatei': EncCommitStatei,
                 'auth': auth == null ? '' : auth.toBase64()
             }
         );

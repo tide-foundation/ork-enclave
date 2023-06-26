@@ -8,12 +8,14 @@ export default class dDecryptionTestFlow{
      * @param {Point} vendorPublic
      * @param {Point} userPublic
      * @param {string} userAuthJwt 
+     * @param {string} cvkOrkUrl
      */
-    constructor(vendorUrl, vendorPublic, userPublic, userAuthJwt){
+    constructor(vendorUrl, vendorPublic, userPublic, userAuthJwt, cvkOrkUrl){
         this.vendorUrl = vendorUrl;
         this.vendorPublic = vendorPublic;
         this.userPublic = userPublic;
         this.jwt = userAuthJwt;
+        this.cvkOrkUrl = cvkOrkUrl;
     }
 
     async startTest(){
@@ -23,6 +25,6 @@ export default class dDecryptionTestFlow{
         const encryptedByGVVK = await encrypt_ElGamal(challenge, this.vendorPublic);
 
         const vendorClient = new VendorClient(this.vendorUrl);
-        await vendorClient.DecryptionTest(encryptedByGCVK, encryptedByGVVK, this.jwt);
+        await vendorClient.DecryptionTest(encryptedByGCVK, encryptedByGVVK, this.jwt, this.cvkOrkUrl);
     }
 }

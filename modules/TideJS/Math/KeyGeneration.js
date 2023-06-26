@@ -45,7 +45,7 @@ export async function SendShardReply(keyId, sendShardResponses, mgORKi, timestam
     // Interpolate the gMultipliers
     const gMultiplied = sendShardResponses[0].gMultiplied.map((m, i) => m == null ? null : sendShardResponses.reduce((sum, next) => sum.add(next.gMultiplied[i]), Point.infinity));
 
-    return {S: S, encCommitStatei: sendShardResponses.map(resp => resp.encCommitStatei), gMultiplied: gMultiplied, GK1: sendShardResponses[0].gK1};
+    return {S: S, gMultiplied: gMultiplied, GK1: sendShardResponses[0].gK1};
 }
 
 /**

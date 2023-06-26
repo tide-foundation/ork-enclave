@@ -47,13 +47,12 @@ export default class dKeyGenerationFlow {
     /**
      * @param {string} uid
      * @param {bigint} S 
-     * @param {string[]} EncCommitStatei 
      * @param {Point} auth
      */
-    async Commit(uid, S, EncCommitStatei, auth=null) {
+    async Commit(uid, S, auth=null) {
         const clients = this.orks.map(ork => new NodeClient(ork[1])) // create node clients
 
-        const pre_CommitResponses = clients.map((client, i) => client.Commit(uid, S, EncCommitStatei[i], auth));
+        const pre_CommitResponses = clients.map(client => client.Commit(uid, S, auth));
         await Promise.all(pre_CommitResponses);
     }
 }

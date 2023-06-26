@@ -91,16 +91,13 @@ export default class SignUp {
         // Test sign in
         const jwt = await this.testSignIn(username, password, gVVK, cmkSendShardData.GK1, cvkSendShardData.GK1, gPRISMAuth);
 
-        // Send PreCommited DNS Entry for CVK Key to Random CVK ork (CMK Orks will do CMK DNS entry themselves) 
-        
-
         // Test dDecrypt
-        const dDecryptFlow = new dDecryptionTestFlow(vendorUrl, Point.fromB64(gVVK), cvkSendShardData.GK1, jwt);
+        const dDecryptFlow = new dDecryptionTestFlow(vendorUrl, Point.fromB64(gVVK), cvkSendShardData.GK1, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
         await dDecryptFlow.startTest();
 
         // Commit newly generated keys
-        const pre_cmkCommit = cmkGenFlow.Commit(uid, cmkSendShardData.S, cmkSendShardData.encCommitStatei, gPRISMAuth);
-        const pre_cvkCommit = cvkGenFlow.Commit(VUID, cvkSendShardData.S, cvkSendShardData.encCommitStatei);
+        const pre_cmkCommit = cmkGenFlow.Commit(uid, cmkSendShardData.S, gPRISMAuth);
+        const pre_cvkCommit = cvkGenFlow.Commit(VUID, cvkSendShardData.S);
 
         await pre_cmkCommit;
         await pre_cvkCommit;
