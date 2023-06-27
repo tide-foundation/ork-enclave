@@ -89,7 +89,7 @@ export default class SignUp {
         const cvkSendShardData = await cvkGenFlow.SendShard(VUID, cvkGenShardData.sortedShares, cvkGenShardData.R2, [], cvkGenShardData.timestamp, gCMKAuth);
 
         // Test sign in
-        const jwt = await this.testSignIn(username, password, gVVK, cmkSendShardData.GK1, cvkSendShardData.GK1, gPRISMAuth);
+        const jwt = await this.testSignIn(gUser, gPass, gVVK, cmkSendShardData.GK1, cvkSendShardData.GK1, gPRISMAuth);
 
         // Test dDecrypt
         const dDecryptFlow = new dDecryptionTestFlow(vendorUrl, Point.fromB64(gVVK), cvkSendShardData.GK1, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
@@ -115,7 +115,7 @@ export default class SignUp {
      * @param {Point} gPRISMAuth
      * @returns 
      */
-    async testSignIn(username, password, gVVK, cmkPub, cvkPub, gPRISMAuth){
+    async testSignIn(gUser, gPass, gVVK, cmkPub, cvkPub, gPRISMAuth){
         const startTime = BigInt(Math.floor(Date.now() / 1000));
         const r1 = RandomBigInt();
         const r2 = RandomBigInt();
