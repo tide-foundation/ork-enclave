@@ -20,7 +20,7 @@ export default class ElGamal{
             c2 = ConcatUint8Arrays([version_byte, length_byte, XOR(padded_secret, await SHA256_Digest(publicKey.times(r).toArray()))])
         }
         else{
-            c2 = base64ToBytes(AES.encryptData(secretData, await SHA256_Digest(publicKey.times(r).toArray())));
+            c2 = base64ToBytes(await AES.encryptData(secretData, await SHA256_Digest(publicKey.times(r).toArray())));
         }
         return bytesToBase64(ConcatUint8Arrays([c1, c2]));
     }
