@@ -107,8 +107,8 @@ export default class SignUp {
 
     /**
      * 
-     * @param {string} username 
-     * @param {string} password 
+     * @param {Point} gUser 
+     * @param {Point} gPass 
      * @param {string} gVVK 
      * @param {Point} cmkPub 
      * @param {Point} cvkPub 
@@ -122,11 +122,8 @@ export default class SignUp {
         //hash username
         const uid = Bytes2Hex(await SHA256_Digest(username.toLowerCase()));
 
-
-        const gUser = await Point.fromString(username.toLowerCase() + gVVK);
         const gBlurUser = gUser.times(r2);
         //convert password to point
-        const gPass = await Point.fromString(password);
         const gBlurPass = gPass.times(r1);
 
         const authFlow = new dKeyAuthenticationFlow(this.cmkOrkInfo);
