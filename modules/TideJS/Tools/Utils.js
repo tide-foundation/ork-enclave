@@ -114,6 +114,19 @@ export function XOR(array1, array2){
     }
     return result;
 }
+/**
+ * 
+ * @param {Array} array 
+ * @param {number} length 
+ * @param {object} padding 
+ * @returns 
+ */
+export function PadRight(array, length, padding=0) {
+    while (array.length < length) {
+        array.push(padding);
+    }
+    return array;
+}
 
 /**
  * @param {string} string 

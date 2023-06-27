@@ -1,6 +1,6 @@
 import VendorClient from "../Clients/VendorClient.js";
 import Point from "../Ed25519/point.js";
-import { encrypt_ElGamal } from "../Tools/ElGamal.js";
+import ElGamal from "../Tools/ElGamal.js";
 
 export default class dDecryptionTestFlow{
     /**
@@ -21,8 +21,8 @@ export default class dDecryptionTestFlow{
     async startTest(){
         const challenge = new Uint8Array(32);
         window.crypto.getRandomValues(challenge);
-        const encryptedByGCVK = await encrypt_ElGamal(challenge, this.userPublic);
-        const encryptedByGVVK = await encrypt_ElGamal(challenge, this.vendorPublic);
+        const encryptedByGCVK = await ElGamal.encryptData(challenge, this.userPublic);
+        const encryptedByGVVK = await ElGamal.encryptData(challenge, this.vendorPublic);
 
         const vendorClient = new VendorClient(this.vendorUrl);
         await vendorClient.DecryptionTest(encryptedByGCVK, encryptedByGVVK, this.jwt, this.cvkOrkUrl);
