@@ -89,7 +89,7 @@ export default class SignUp {
         const cvkSendShardData = await cvkGenFlow.SendShard(VUID, cvkGenShardData.sortedShares, cvkGenShardData.R2, [], cvkGenShardData.timestamp, gCMKAuth);
 
         // Test sign in
-        const jwt = await this.testSignIn(gUser, gPass, gVVK, cmkSendShardData.GK1, cvkSendShardData.GK1, gPRISMAuth);
+        const jwt = await this.testSignIn(uid, gUser, gPass, gVVK, cmkSendShardData.GK1, cvkSendShardData.GK1, gPRISMAuth);
 
         // Test dDecrypt
         const dDecryptFlow = new dDecryptionTestFlow(vendorUrl, Point.fromB64(gVVK), cvkSendShardData.GK1, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
@@ -106,7 +106,7 @@ export default class SignUp {
     }
 
     /**
-     * 
+     * @param {string} uid
      * @param {Point} gUser 
      * @param {Point} gPass 
      * @param {string} gVVK 
@@ -115,15 +115,13 @@ export default class SignUp {
      * @param {Point} gPRISMAuth
      * @returns 
      */
-    async testSignIn(gUser, gPass, gVVK, cmkPub, cvkPub, gPRISMAuth){
+    async testSignIn(uid, gUser, gPass, gVVK, cmkPub, cvkPub, gPRISMAuth){
         const startTime = BigInt(Math.floor(Date.now() / 1000));
         const r1 = RandomBigInt();
         const r2 = RandomBigInt();
-        //hash username
-        const uid = Bytes2Hex(await SHA256_Digest(username.toLowerCase()));
 
         const gBlurUser = gUser.times(r2);
-        //convert password to point
+        
         const gBlurPass = gPass.times(r1);
 
         const authFlow = new dKeyAuthenticationFlow(this.cmkOrkInfo);
