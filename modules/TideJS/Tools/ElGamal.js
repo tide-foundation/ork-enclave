@@ -13,7 +13,7 @@ export default class ElGamal{
         const r = RandomBigInt();
         const c1 = Point.g.times(r).toArray();
         var c2;
-        if(secretData.length < 32){
+        if(secretData.length <= 32){
             const padded_secret = Utils.PadRight(secretData, 32);
             const length_byte = new Uint8Array([secretData.length]);
             const version_byte = new Uint8Array([0]); // no versioning yet
