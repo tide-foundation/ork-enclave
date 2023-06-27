@@ -1,4 +1,4 @@
-import Point from "../Ed25519/point";
+import Point from "../Ed25519/point.js";
 
 export default class AuthenticateResponse{
     /**
