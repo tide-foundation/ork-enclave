@@ -1,4 +1,5 @@
 import Point from "../Ed25519/point.js";
+import AuthenticateResponse from "../Models/AuthenticateResponse.js";
 import ConvertResponse from "../Models/ConvertResponse.js";
 import EncryptedConvertResponse from "../Models/EncryptedConvertResponse.js";
 import TideJWT from "../Models/TideJWT.js";
@@ -89,14 +90,16 @@ export async function CmkConvertReply(id, convertResponses, lis, prismAuthis, gC
  * @param {Point[]} vgORKi
  */
 export async function PreSignInCVKReply(encSig, encCVKRi, data_for_PreSignInCVK, vgORKi){
-    const pre_Si = encSig.map(async (enc, i) => BigInt(await AES.decryptData(enc, data_for_PreSignInCVK.prismAuthis[i])));
-    const Si = await Promise.all(pre_Si);
+    const pre_authResp = encSig.map(async (enc, i) => AuthenticateResponse.from(await AES.decryptData(enc, data_for_PreSignInCVK.prismAuthis[i])));
+    const authResp = await Promise.all(pre_authResp);
 
-    const S = mod(Si.reduce((sum, next) => sum + next) * mod_inv(data_for_PreSignInCVK.r4));
+    const mod_inv_r4 = mod_inv(data_for_PreSignInCVK.r4);
+    const S = mod(authResp.reduce((sum, next) => sum + next.Si, BigInt(0)) * mod_inv_r4);
+    const gBlindH = authResp.reduce((sum, next) => sum.add(next.gBlindH), Point.infinity).times(mod_inv_r4);
 
     const _8 = BigInt(8);
     const hash_CMKAuth = mod(BigIntFromByteArray(await SHA256_Digest("CMK authentication")));
-    if(!(Point.g.times(S).times(_8).isEqual(data_for_PreSignInCVK.gRMul.times(_8).add(data_for_PreSignInCVK.gCMKAuth.times(data_for_PreSignInCVK.H).times(_8).times(hash_CMKAuth))))){
+    if(!(Point.g.times(S).times(_8).isEqual(data_for_PreSignInCVK.gRMul.times(_8).add(data_for_PreSignInCVK.gCMKAuth.times(data_for_PreSignInCVK.H).times(_8)).add(gBlindH.times(hash_CMKAuth).times(_8))))){
         throw new Error("Blind signature failed");
     }
 
@@ -107,7 +110,7 @@ export async function PreSignInCVKReply(encSig, encCVKRi, data_for_PreSignInCVK,
     const gCVKRi = await Promise.all(pre_gCVKRi);
     const gCVKR = gCVKRi.reduce((sum, next) => sum.add(next));
 
-    return {gCVKR: gCVKR, S: S, ECDHi: ECDHi}
+    return {gCVKR: gCVKR, S: S, ECDHi: ECDHi, gBlindH: gBlindH}
 }
 
 /**

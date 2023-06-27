@@ -113,12 +113,13 @@ export default class dKeyAuthenticationFlow{
      * @param {Point} gCVKR 
      * @param {bigint} S
      * @param {Uint8Array[]} ECDHi
+     * @param {Point} gBlindH
      * @param {boolean} uncommitted
      */
-    async SignInCVK(vuid, jwt, vlis, timestamp2, gRMul, gCVKR, S, ECDHi, uncommitted=false){
+    async SignInCVK(vuid, jwt, vlis, timestamp2, gRMul, gCVKR, S, ECDHi, gBlindH, uncommitted=false){
         const cvkClients = this.CVKorks.map(ork => new NodeClient(ork[1]))
 
-        const pre_encCVKSig = cvkClients.map((client, i) => client.SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, vlis[i], uncommitted));
+        const pre_encCVKSig = cvkClients.map((client, i) => client.SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, vlis[i], gBlindH, uncommitted));
         const encCVKSign = await Promise.all(pre_encCVKSig);
 
         return await SignInCVKReply(encCVKSign, gCVKR, jwt, ECDHi, vlis);

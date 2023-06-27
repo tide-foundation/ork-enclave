@@ -88,16 +88,18 @@ export default class NodeClient extends ClientBase {
      * @param {bigint} S 
      * @param {Point} gCVKR 
      * @param {bigint} li 
+     * @param {Point} gBlindH
      * @param {boolean} uncommitted
      */
-    async SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, li, uncommitted=false){
+    async SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, li, gBlindH, uncommitted=false){
         const data = this._createFormData({ 
             'jwt': jwt, 
             'timestamp2': timestamp2.toString(), 
             'gRMul': gRMul.toBase64(), 
             's': S.toString(), 
             'gCVKR': gCVKR.toBase64(),
-            'li': li.toString() ,
+            'li': li.toString(),
+            'gBlindH': gBlindH.toBase64(),
             'uncommitted': uncommitted
         });
         const response = await this._post(`/CVK/SignIn?uid=${vuid}`, data)
