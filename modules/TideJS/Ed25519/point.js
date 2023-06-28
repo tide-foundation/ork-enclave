@@ -42,6 +42,7 @@
 
 import { SHA256_Digest } from "../Tools/Hash.js";
 import { BigIntToByteArray, BigIntFromByteArray, bytesToBase64, base64ToBytes, ConcatUint8Arrays, Bytes2Hex } from "../Tools/Utils.js";
+import HashToPoint from "../Tools/hashToPoint.js";
 
 const _0n = BigInt(0);
 const _1n = BigInt(1);
@@ -184,17 +185,7 @@ export default class Point {
     }
 
     static async fromString(message){
-        // this function genereates a pseudo random point (multiple of G) from a message
-        var x = BigIntFromByteArray(await SHA256_Digest(message));
-
-        var point = new Point(x);
-
-        while (!point.times(Point.order).isInfinity()) {
-            x = x + _1n; 
-            point = new Point(x);
-        }
-
-        return point;
+        return await HashToPoint(message);
     }
 
     /** @returns {Uint8Array} */
