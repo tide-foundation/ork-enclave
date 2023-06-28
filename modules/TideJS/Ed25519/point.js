@@ -41,7 +41,7 @@
 
 
 import { BigIntToByteArray, BigIntFromByteArray, bytesToBase64, base64ToBytes } from "../Tools/Utils.js";
-import HashToPoint from "../Tools/hashToPoint.js";
+import HashToPoint from "../Tools/H2P.js";
 
 const _0n = BigInt(0);
 const _1n = BigInt(1);
