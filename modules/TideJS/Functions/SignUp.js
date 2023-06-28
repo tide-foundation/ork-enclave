@@ -81,26 +81,27 @@ export default class SignUp {
         // Start Key Generation Flow
         const cmkGenFlow = new dKeyGenerationFlow(this.cmkOrkInfo);
         const cmkGenShardData = await cmkGenFlow.GenShard(uid, 2, [gBlurUser, gBlurPass]);  // GenShard
-        const pre_cmkSendShardData = cmkGenFlow.SendShard(uid, cmkGenShardData.sortedShares, cmkGenShardData.R2, cmkGenShardData.timestamp);  // async SendShard
-        
+
         const {gPRISMAuth, VUID, gCMKAuth} = await this.getKeyPoints(cmkGenShardData.gMultiplied, [r1, r2], cmkGenShardData.gK1);
+
+        const pre_cmkSendShardData = cmkGenFlow.SendShard(uid, cmkGenShardData.sortedShares, cmkGenShardData.R2, cmkGenShardData.timestamp, gPRISMAuth, "CMK");  // async SendShard
 
         const cvkGenFlow = new dKeyGenerationFlow(this.cvkOrkInfo);
         const cvkGenShardData = await cvkGenFlow.GenShard(VUID, 1, []);
-        const cvkSendShardData = await cvkGenFlow.SendShard(VUID, cvkGenShardData.sortedShares, cvkGenShardData.R2, cvkGenShardData.timestamp, gCMKAuth);
+        const cvkSendShardData = await cvkGenFlow.SendShard(VUID, cvkGenShardData.sortedShares, cvkGenShardData.R2, cvkGenShardData.timestamp, gCMKAuth, "CVK");
 
         const cmkSendShardData = await pre_cmkSendShardData;
 
         // Test sign in
-        const jwt = await this.testSignIn(uid, gUser, gPass, gVVK, cmkGenShardData.gK1, cvkGenShardData.gK1, gPRISMAuth);
+        const jwt = await this.testSignIn(uid, gUser, gPass, gVVK, cmkGenShardData.gK1, cvkGenShardData.gK1);
 
         // Test dDecrypt
         const dDecryptFlow = new dDecryptionTestFlow(vendorUrl, Point.fromB64(gVVK), cvkGenShardData.gK1, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
         await dDecryptFlow.startTest();
 
         // Commit newly generated keys
-        const pre_cmkCommit = cmkGenFlow.Commit(uid, cmkSendShardData.S, gPRISMAuth);
-        const pre_cvkCommit = cvkGenFlow.Commit(VUID, cvkSendShardData.S);
+        const pre_cmkCommit = cmkGenFlow.Commit(uid, cmkSendShardData.S, "CMK");
+        const pre_cvkCommit = cvkGenFlow.Commit(VUID, cvkSendShardData.S, "CVK");
 
         await pre_cmkCommit;
         await pre_cvkCommit;
@@ -115,10 +116,9 @@ export default class SignUp {
      * @param {string} gVVK 
      * @param {Point} cmkPub 
      * @param {Point} cvkPub 
-     * @param {Point} gPRISMAuth
      * @returns 
      */
-    async testSignIn(uid, gUser, gPass, gVVK, cmkPub, cvkPub, gPRISMAuth){
+    async testSignIn(uid, gUser, gPass, gVVK, cmkPub, cvkPub){
         const startTime = BigInt(Math.floor(Date.now() / 1000));
         const r1 = RandomBigInt();
         const r2 = RandomBigInt();
@@ -128,10 +128,10 @@ export default class SignUp {
         const gBlurPass = gPass.times(r1);
 
         const authFlow = new dKeyAuthenticationFlow(this.cmkOrkInfo);
-        const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK, gPRISMAuth);
+        const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK, true);
         
         authFlow.CVKorks = this.cvkOrkInfo;
-        const authData = await authFlow.Authenticate_and_PreSignInCVK(uid, convertData.VUID, convertData.decChallengei, convertData.encAuthRequests, convertData.gSessKeyPub, convertData.data_for_PreSignInCVK, gPRISMAuth);
+        const authData = await authFlow.Authenticate_and_PreSignInCVK(uid, convertData.VUID, convertData.decChallengei, convertData.encAuthRequests, convertData.gSessKeyPub, convertData.data_for_PreSignInCVK, true);
 
         const jwt = await authFlow.SignInCVK(convertData.VUID, convertData.jwt, authData.vlis, convertData.timestamp2, convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, true);
         if(!(await TideJWT.verify(jwt, cvkPub))) throw Error("Test sign in failed");

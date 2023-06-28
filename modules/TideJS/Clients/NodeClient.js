@@ -33,14 +33,14 @@ export default class NodeClient extends ClientBase {
      * @param {Point} gBlurUser
      * @param {Point} gBlurPass
      * @param {string} uid 
-     * @param {Point} testPrismAuth
+     * @param {boolean} test
      * @returns {Promise<ConvertResponse>}
      */
-    async Convert(uid, gBlurUser, gBlurPass, testPrismAuth=null) {
+    async Convert(uid, gBlurUser, gBlurPass, test=false) {
         const data = this._createFormData({ 
             'gBlurUser': gBlurUser.toBase64(), 
             'gBlurPass': gBlurPass.toBase64(),
-            'testPrismAuth': testPrismAuth == null ? '' : testPrismAuth.toBase64()
+            'test': test
         })
         const response = await this._post(`/CMK/Convert?uid=${uid}`, data)
         const responseData = await this._handleError(response, "Convert CMK/Prism");
@@ -51,14 +51,14 @@ export default class NodeClient extends ClientBase {
      * @param {string} decryptedChallenge
      * @param {string} encryptedAuthRequest
      * @param {string} uid 
-     * @param {Point} testPrismAuth
+     * @param {boolean} test
      * @returns {Promise<string>}
      */
-    async Authenticate(uid, decryptedChallenge, encryptedAuthRequest, testPrismAuth=null) {
+    async Authenticate(uid, decryptedChallenge, encryptedAuthRequest, test=false) {
         const data = this._createFormData({ 
             'decryptedChallenge': decryptedChallenge, 
             'encAuthRequest': encryptedAuthRequest,
-            'testPrismAuth': testPrismAuth == null ? '' : testPrismAuth.toBase64()
+            'test': test
         })
         const response = await this._post(`/CMK/Authenticate?uid=${uid}`, data)
 
@@ -89,9 +89,9 @@ export default class NodeClient extends ClientBase {
      * @param {Point} gCVKR 
      * @param {bigint} li 
      * @param {Point} gBlindH
-     * @param {boolean} uncommitted
+     * @param {boolean} test
      */
-    async SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, li, gBlindH, uncommitted=false){
+    async SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, li, gBlindH, test=false){
         const data = this._createFormData({ 
             'jwt': jwt, 
             'timestamp2': timestamp2.toString(), 
@@ -100,7 +100,7 @@ export default class NodeClient extends ClientBase {
             'gCVKR': gCVKR.toBase64(),
             'li': li.toString(),
             'gBlindH': gBlindH.toBase64(),
-            'uncommitted': uncommitted
+            'test': test
         });
         const response = await this._post(`/CVK/SignIn?uid=${vuid}`, data)
         const encCVKSign = await this._handleError(response, "SignInCVK");
@@ -133,13 +133,15 @@ export default class NodeClient extends ClientBase {
      * @param {string[]} shares 
      * @param {Point} R2
      * @param {Point} auth
+     * @param {string} keyType
      */
-    async SendShard(uid, shares, R2, auth) {
+    async SendShard(uid, shares, R2, auth, keyType) {
         const data = this._createFormData(
             { 
                 'yijCipher': shares, 
                 'R2': R2.toBase64(),
-                'auth': auth == null ? '' : auth.toBase64()
+                'auth': auth.toBase64(),
+                'keyType': keyType
             });
         const response = await this._post(`/Create/SendShard?uid=${uid}`, data);
 
@@ -151,13 +153,13 @@ export default class NodeClient extends ClientBase {
     /**
      * @param {string} uid 
      * @param {bigint} S  
-     * @param {Point} auth
+     * @param {string} keyType
      */
-    async Commit(uid, S, auth) {
+    async Commit(uid, S, keyType) {
         const data = this._createFormData(
             {
                 'S': S.toString(),
-                'auth': auth == null ? '' : auth.toBase64()
+                'keyType': keyType
             }
         );
         const response = await this._post(`/Create/Commit?uid=${uid}`, data);

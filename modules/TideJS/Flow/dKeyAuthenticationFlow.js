@@ -26,13 +26,13 @@ export default class dKeyAuthenticationFlow{
      * @param {bigint} startTime
      * @param {Point} gCMK
      * @param {string} gVVK
-     * @param {Point} testGPrismAuth
+     * @param {boolean} test
      */
-    async Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, gCMK, gVVK, testGPrismAuth=null){
+    async Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, gCMK, gVVK, test=false){
         const clients = this.CMKorks.map(ork => new NodeClient(ork[1])) // create node clients
 
         // Here we also find out which ORKs are up
-        const pre_ConvertResponses = clients.map(client => client.Convert(uid, gBlurUser, gBlurPass, testGPrismAuth));
+        const pre_ConvertResponses = clients.map(client => client.Convert(uid, gBlurUser, gBlurPass, test));
         const settledPromises = await Promise.allSettled(pre_ConvertResponses);// determine which promises were fulfilled
         var activeOrks = []
         settledPromises.forEach((promise, i) => {
@@ -65,13 +65,13 @@ export default class dKeyAuthenticationFlow{
      * @param {string[]} encryptedAuthRequest 
      * @param {Point} gSessKeyPub
      * @param {object} data_for_PreSignInCVK
-     * @param {Point} testPrismAuth
+     * @param {boolean} test
      */
-    async Authenticate_and_PreSignInCVK(uid, vuid, decryptedChallengei, encryptedAuthRequest, gSessKeyPub, data_for_PreSignInCVK, testPrismAuth=null){
+    async Authenticate_and_PreSignInCVK(uid, vuid, decryptedChallengei, encryptedAuthRequest, gSessKeyPub, data_for_PreSignInCVK, test=false){
         const cmkClients = this.CMKorks.map(ork => new NodeClient(ork[1]))
         const cvkClients = this.CVKorks.map(ork => new NodeClient(ork[1]))
 
-        const pre_encSig = cmkClients.map((client, i) => client.Authenticate(uid, decryptedChallengei[i], encryptedAuthRequest[i], testPrismAuth))
+        const pre_encSig = cmkClients.map((client, i) => client.Authenticate(uid, decryptedChallengei[i], encryptedAuthRequest[i], test))
         const pre_encCVKRi = cvkClients.map(client => client.PreSignInCVK(vuid, gSessKeyPub));
 
         const encSig = await Promise.all(pre_encSig);
@@ -114,12 +114,12 @@ export default class dKeyAuthenticationFlow{
      * @param {bigint} S
      * @param {Uint8Array[]} ECDHi
      * @param {Point} gBlindH
-     * @param {boolean} uncommitted
+     * @param {boolean} test
      */
-    async SignInCVK(vuid, jwt, vlis, timestamp2, gRMul, gCVKR, S, ECDHi, gBlindH, uncommitted=false){
+    async SignInCVK(vuid, jwt, vlis, timestamp2, gRMul, gCVKR, S, ECDHi, gBlindH, test=false){
         const cvkClients = this.CVKorks.map(ork => new NodeClient(ork[1]))
 
-        const pre_encCVKSig = cvkClients.map((client, i) => client.SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, vlis[i], gBlindH, uncommitted));
+        const pre_encCVKSig = cvkClients.map((client, i) => client.SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, vlis[i], gBlindH, test));
         const encCVKSign = await Promise.all(pre_encCVKSig);
 
         return await SignInCVKReply(encCVKSign, gCVKR, jwt, ECDHi, vlis);
