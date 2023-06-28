@@ -25,6 +25,7 @@ import SignIn from "./SignIn.js"
 import dKeyAuthenticationFlow from "../Flow/dKeyAuthenticationFlow.js"
 import TideJWT from "../Models/TideJWT.js"
 import dDecryptionTestFlow from "../Flow/dDecryptionTestFlow.js"
+import HashToPoint from "../Tools/H2P.js"
 
 export default class SignUp {
     /**
@@ -71,10 +72,10 @@ export default class SignUp {
         const r1 = RandomBigInt();
         const r2 = RandomBigInt();
 
-        const gUser = await Point.fromString(username.toLowerCase() + gVVK);
+        const gUser = await HashToPoint(username.toLowerCase() + gVVK);
         const gBlurUser = gUser.times(r1);
         //convert password to point
-        const gPass = await Point.fromString(password);
+        const gPass = await HashToPoint(password);
         const gBlurPass = gPass.times(r2);
 
         // Start Key Generation Flow

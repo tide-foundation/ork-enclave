@@ -41,7 +41,6 @@
 
 
 import { BigIntToByteArray, BigIntFromByteArray, bytesToBase64, base64ToBytes } from "../Tools/Utils.js";
-import HashToPoint from "../Tools/H2P.js";
 
 const _0n = BigInt(0);
 const _1n = BigInt(1);
@@ -181,10 +180,6 @@ export default class Point {
      */
     static fromB64(data){
         return data == null ? null : this.decompress(base64ToBytes(data));
-    }
-
-    static async fromString(message){
-        return await HashToPoint(message);
     }
 
     /** @returns {Uint8Array} */

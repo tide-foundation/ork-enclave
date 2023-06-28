@@ -23,6 +23,7 @@ import SimulatorClient from "../Clients/SimulatorClient.js"
 import NodeClient from "../Clients/NodeClient.js"
 import { decryptData } from "../Tools/AES.js"
 import dKeyAuthenticationFlow from "../Flow/dKeyAuthenticationFlow.js"
+import HashToPoint from "../Tools/H2P.js"
 
 export default class SignIn {
     /**
@@ -61,10 +62,10 @@ export default class SignIn {
         const pre_orkInfo = simClient.GetUserORKs(uid);
         const pre_cmkPub = simClient.GetKeyPublic(uid);
 
-        const gUser = await Point.fromString(username.toLowerCase() + gVVK);
+        const gUser = await HashToPoint(username.toLowerCase() + gVVK);
         const gBlurUser = gUser.times(r2);
         //convert password to point
-        const gPass = await Point.fromString(password);
+        const gPass = await HashToPoint(password);
         const gBlurPass = gPass.times(r1);
 
         // get ork urls
