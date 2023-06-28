@@ -80,14 +80,14 @@ export default class SignUp {
 
         // Start Key Generation Flow
         const cmkGenFlow = new dKeyGenerationFlow(this.cmkOrkInfo);
-        const cmkGenShardData = await cmkGenFlow.GenShard(uid, 2);  // GenShard
-        const pre_cmkSendShardData = cmkGenFlow.SendShard(uid, cmkGenShardData.sortedShares, cmkGenShardData.R2, [gBlurUser, gBlurPass], cmkGenShardData.timestamp);  // async SendShard
+        const cmkGenShardData = await cmkGenFlow.GenShard(uid, 2, [gBlurUser, gBlurPass]);  // GenShard
+        const pre_cmkSendShardData = cmkGenFlow.SendShard(uid, cmkGenShardData.sortedShares, cmkGenShardData.R2, cmkGenShardData.timestamp);  // async SendShard
         
         const {gPRISMAuth, VUID, gCMKAuth} = await this.getKeyPoints(cmkGenShardData.gMultiplied, [r1, r2], cmkGenShardData.gK1);
 
         const cvkGenFlow = new dKeyGenerationFlow(this.cvkOrkInfo);
-        const cvkGenShardData = await cvkGenFlow.GenShard(VUID, 1);
-        const cvkSendShardData = await cvkGenFlow.SendShard(VUID, cvkGenShardData.sortedShares, cvkGenShardData.R2, [], cvkGenShardData.timestamp, gCMKAuth);
+        const cvkGenShardData = await cvkGenFlow.GenShard(VUID, 1, []);
+        const cvkSendShardData = await cvkGenFlow.SendShard(VUID, cvkGenShardData.sortedShares, cvkGenShardData.R2, cvkGenShardData.timestamp, gCMKAuth);
 
         const cmkSendShardData = await pre_cmkSendShardData;
 

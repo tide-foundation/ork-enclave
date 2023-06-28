@@ -111,13 +111,15 @@ export default class NodeClient extends ClientBase {
      * @param {string} uid
      * @param {bigint[]} mIdORKij
      * @param {number} numKeys
+     * @param {Point[]} gMultipliers
      * @returns {Promise<GenShardResponse>}
      */
-    async GenShard(uid, mIdORKij, numKeys) {
+    async GenShard(uid, mIdORKij, numKeys, gMultipliers) {
         const data = this._createFormData(
             {
                 'mIdORKij': mIdORKij.map(n => n.toString()),
-                'numKeys': numKeys
+                'numKeys': numKeys,
+                'gMultipliers': gMultipliers.map(p => p == null ? "" : p.toBase64()),
             }
         );
         const response = await this._post(`/Create/GenShard?uid=${uid}`, data);
@@ -130,15 +132,13 @@ export default class NodeClient extends ClientBase {
      * @param {string} uid 
      * @param {string[]} shares 
      * @param {Point} R2
-     * @param {Point[]} gMultipliers
      * @param {Point} auth
      */
-    async SendShard(uid, shares, R2, gMultipliers, auth) {
+    async SendShard(uid, shares, R2, auth) {
         const data = this._createFormData(
             { 
                 'yijCipher': shares, 
                 'R2': R2.toBase64(),
-                'gMultipliers': gMultipliers.map(p => p == null ? "" : p.toBase64()),
                 'auth': auth == null ? '' : auth.toBase64()
             });
         const response = await this._post(`/Create/SendShard?uid=${uid}`, data);

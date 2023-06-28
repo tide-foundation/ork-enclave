@@ -16,12 +16,13 @@ export default class dKeyGenerationFlow {
     /**
      * @param {string} uid 
      * @param {number} numKeys 
+     * @param {Point[]} gMultipliers 
      */
-    async GenShard(uid, numKeys) {
+    async GenShard(uid, numKeys, gMultipliers) {
         const clients = this.orks.map(ork => new NodeClient(ork[1])) // create node clients
 
         const ids = this.orks.map(ork => BigInt(ork[0]));
-        const pre_GenShardResponses = clients.map(client => client.GenShard(uid, ids, numKeys));
+        const pre_GenShardResponses = clients.map(client => client.GenShard(uid, ids, numKeys, gMultipliers));
         const GenShardResponses = await Promise.all(pre_GenShardResponses);
 
         return GenShardReply(GenShardResponses);
@@ -31,14 +32,13 @@ export default class dKeyGenerationFlow {
      * @param {string} uid 
      * @param {string[][]} YijCipher 
      * @param {Point} R2
-     * @param {Point[]} gMultipliers
      * @param {bigint} timestamp
      * @param {Point} auth
      */
-    async SendShard(uid, YijCipher, R2, gMultipliers, timestamp, auth=null) {
+    async SendShard(uid, YijCipher, R2, timestamp, auth=null) {
         const clients = this.orks.map(ork => new NodeClient(ork[1])) // create node clients
 
-        const pre_SendShardResponses = clients.map((client, i) => client.SendShard(uid, YijCipher[i], R2, gMultipliers, auth))
+        const pre_SendShardResponses = clients.map((client, i) => client.SendShard(uid, YijCipher[i], R2, auth))
         const SendShardResponses = await Promise.all(pre_SendShardResponses);
 
         return SendShardReply(uid, SendShardResponses, this.orks.map(ork => ork[2]), timestamp, R2);
