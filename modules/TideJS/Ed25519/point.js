@@ -1,19 +1,43 @@
-// 
+//
 // Tide Protocol - Infrastructure for a TRUE Zero-Trust paradigm
 // Copyright (C) 2022 Tide Foundation Ltd
-// 
-// This program is free software and is subject to the terms of 
-// the Tide Community Open Code License as published by the 
-// Tide Foundation Limited. You may modify it and redistribute 
+//
+// This program is free software and is subject to the terms of
+// the Tide Community Open Code License as published by the
+// Tide Foundation Limited. You may modify it and redistribute
 // it in accordance with and subject to the terms of that License.
-// This program is distributed WITHOUT WARRANTY of any kind, 
-// including without any implied warranty of MERCHANTABILITY or 
+// This program is distributed WITHOUT WARRANTY of any kind,
+// including without any implied warranty of MERCHANTABILITY or
 // FITNESS FOR A PARTICULAR PURPOSE.
 // See the Tide Community Open Code License for more details.
-// You should have received a copy of the Tide Community Open 
+// You should have received a copy of the Tide Community Open
 // Code License along with this program.
 // If not, see https://tide.org/licenses_tcoc2-0-0-en
 //
+// Some parts of the code were taken from @noble/curves project and are protected under the following license:
+//
+// The MIT License (MIT)
+// 
+// Copyright (c) 2022 Paul Miller (https://paulmillr.com)
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+// 
 
 
 import { SHA256_Digest } from "../Tools/Hash.js";
