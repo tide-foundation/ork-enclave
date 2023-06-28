@@ -13,7 +13,14 @@ export function GenShardReply(genShardResponses){
     const sortedShares = SortShares(genShardResponses.map(resp => resp.YijCiphers)); // sort shares so they can easily be sent to respective orks
     const timestamp = median(genShardResponses.map(resp => resp.Timestampi));
     const R2 = genShardResponses.reduce((sum, next) => next.GRi.add(sum), Point.infinity);
-    return {sortedShares: sortedShares, timestamp: timestamp, R2: R2};
+
+    // Interpolate the gMultipliers
+    const gMultiplied = genShardResponses[0].GMultiplied.map((m, i) => m == null ? null : genShardResponses.reduce((sum, next) => sum.add(next.GMultiplied[i]), Point.infinity));
+
+    // Interpolate the public
+    const gK1 = genShardResponses.reduce((sum, next) => sum.add(next.GK1i), Point.infinity);
+
+    return {sortedShares: sortedShares, timestamp: timestamp, R2: R2, gMultiplied: gMultiplied, gK1: gK1};
 }
 
 /**
@@ -24,8 +31,6 @@ export function GenShardReply(genShardResponses){
  * @param {Point} R2
  */
 export async function SendShardReply(keyId, sendShardResponses, mgORKi, timestamp, R2){
-    // Verify all GK1s are the same
-    if(!sendShardResponses.every(resp => resp.gK1.isEqual(sendShardResponses[0].gK1))) throw new Error("SendShardReply: Not all GK1s returned are the same.");
 
     // Aggregate the signature
     const S = mod(sendShardResponses.reduce((sum, next) =>  next.Si + sum, BigInt(0)));
@@ -42,10 +47,7 @@ export async function SendShardReply(keyId, sendShardResponses, mgORKi, timestam
     // Verify signature validates
     if(!(Point.g.times(S).isEqual(R.add(sendShardResponses[0].gK1.times(H))))) throw new Error("SendShard: Signature test failed");
 
-    // Interpolate the gMultipliers
-    const gMultiplied = sendShardResponses[0].gMultiplied.map((m, i) => m == null ? null : sendShardResponses.reduce((sum, next) => sum.add(next.gMultiplied[i]), Point.infinity));
-
-    return {S: S, gMultiplied: gMultiplied, GK1: sendShardResponses[0].gK1};
+    return {S: S};
 }
 
 /**

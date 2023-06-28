@@ -81,19 +81,21 @@ export default class SignUp {
         // Start Key Generation Flow
         const cmkGenFlow = new dKeyGenerationFlow(this.cmkOrkInfo);
         const cmkGenShardData = await cmkGenFlow.GenShard(uid, 2);  // GenShard
-        const cmkSendShardData = await cmkGenFlow.SendShard(uid, cmkGenShardData.sortedShares, cmkGenShardData.R2, [gBlurUser, gBlurPass], cmkGenShardData.timestamp);   
+        const pre_cmkSendShardData = cmkGenFlow.SendShard(uid, cmkGenShardData.sortedShares, cmkGenShardData.R2, [gBlurUser, gBlurPass], cmkGenShardData.timestamp);  // async SendShard
         
-        const {gPRISMAuth, VUID, gCMKAuth} = await this.getKeyPoints(cmkSendShardData.gMultiplied, [r1, r2], cmkSendShardData.GK1);
+        const {gPRISMAuth, VUID, gCMKAuth} = await this.getKeyPoints(cmkGenShardData.gMultiplied, [r1, r2], cmkGenShardData.gK1);
 
         const cvkGenFlow = new dKeyGenerationFlow(this.cvkOrkInfo);
         const cvkGenShardData = await cvkGenFlow.GenShard(VUID, 1);
         const cvkSendShardData = await cvkGenFlow.SendShard(VUID, cvkGenShardData.sortedShares, cvkGenShardData.R2, [], cvkGenShardData.timestamp, gCMKAuth);
 
+        const cmkSendShardData = await pre_cmkSendShardData;
+
         // Test sign in
-        const jwt = await this.testSignIn(uid, gUser, gPass, gVVK, cmkSendShardData.GK1, cvkSendShardData.GK1, gPRISMAuth);
+        const jwt = await this.testSignIn(uid, gUser, gPass, gVVK, cmkGenShardData.gK1, cvkGenShardData.gK1, gPRISMAuth);
 
         // Test dDecrypt
-        const dDecryptFlow = new dDecryptionTestFlow(vendorUrl, Point.fromB64(gVVK), cvkSendShardData.GK1, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
+        const dDecryptFlow = new dDecryptionTestFlow(vendorUrl, Point.fromB64(gVVK), cvkGenShardData.gK1, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
         await dDecryptFlow.startTest();
 
         // Commit newly generated keys
