@@ -48,7 +48,7 @@ export default class ClientBase {
      * @param {number} timeout
      * @returns {Promise<Response>}
      */
-    async _get(endpoint, timeout = 10000) {
+    async _get(endpoint, timeout = 20000) {
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), timeout);
 
@@ -66,7 +66,7 @@ export default class ClientBase {
      * @param {FormData} data
      * @returns {Promise<Response>}
      */
-    async _post(endpoint, data, timeout = 10000){
+    async _post(endpoint, data, timeout = 20000){
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), timeout);
         
