@@ -40,8 +40,7 @@
 // 
 
 
-import { SHA256_Digest } from "../Tools/Hash.js";
-import { BigIntToByteArray, BigIntFromByteArray, bytesToBase64, base64ToBytes, ConcatUint8Arrays, Bytes2Hex } from "../Tools/Utils.js";
+import { BigIntToByteArray, BigIntFromByteArray, bytesToBase64, base64ToBytes } from "../Tools/Utils.js";
 import HashToPoint from "../Tools/hashToPoint.js";
 
 const _0n = BigInt(0);
