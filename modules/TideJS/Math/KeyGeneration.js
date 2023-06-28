@@ -29,23 +29,24 @@ export function GenShardReply(genShardResponses){
  * @param {Point[]} mgORKi 
  * @param {bigint} timestamp
  * @param {Point} R2
+ * @param {Point} gK1
  */
-export async function SendShardReply(keyId, sendShardResponses, mgORKi, timestamp, R2){
+export async function SendShardReply(keyId, sendShardResponses, mgORKi, timestamp, R2, gK1){
 
     // Aggregate the signature
     const S = mod(sendShardResponses.reduce((sum, next) =>  next.Si + sum, BigInt(0)));
 
     // Generate EdDSA R from all the ORKs publics
-    const M_data_to_hash = ConcatUint8Arrays([sendShardResponses[0].gK1.compress(), StringToUint8Array(timestamp.toString()), StringToUint8Array(keyId)]);
+    const M_data_to_hash = ConcatUint8Arrays([gK1.compress(), StringToUint8Array(timestamp.toString()), StringToUint8Array(keyId)]);
     const M = await SHA256_Digest(M_data_to_hash);
     const R = mgORKi.reduce((sum, next) => sum.add(next)).add(R2);
 
     // Prepare the signature message
-    const H_data_to_hash = ConcatUint8Arrays([R.compress(), sendShardResponses[0].gK1.compress(), M]);
+    const H_data_to_hash = ConcatUint8Arrays([R.compress(), gK1.compress(), M]);
     const H = mod(BigIntFromByteArray(await SHA512_Digest(H_data_to_hash)), Point.order);
 
     // Verify signature validates
-    if(!(Point.g.times(S).isEqual(R.add(sendShardResponses[0].gK1.times(H))))) throw new Error("SendShard: Signature test failed");
+    if(!(Point.g.times(S).isEqual(R.add(gK1.times(H))))) throw new Error("SendShard: Signature test failed");
 
     return {S: S};
 }

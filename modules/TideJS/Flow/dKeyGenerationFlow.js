@@ -35,14 +35,15 @@ export default class dKeyGenerationFlow {
      * @param {bigint} timestamp
      * @param {Point} auth
      * @param {string} keyType
+     * @param {Point} gK1
      */
-    async SendShard(uid, YijCipher, R2, timestamp, auth, keyType) {
+    async SendShard(uid, YijCipher, R2, timestamp, auth, keyType, gK1) {
         const clients = this.orks.map(ork => new NodeClient(ork[1])) // create node clients
 
         const pre_SendShardResponses = clients.map((client, i) => client.SendShard(uid, YijCipher[i], R2, auth, keyType))
         const SendShardResponses = await Promise.all(pre_SendShardResponses);
 
-        return SendShardReply(uid, SendShardResponses, this.orks.map(ork => ork[2]), timestamp, R2);
+        return SendShardReply(uid, SendShardResponses, this.orks.map(ork => ork[2]), timestamp, R2, gK1);
     }
 
     /**
