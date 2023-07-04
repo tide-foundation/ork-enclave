@@ -158,7 +158,10 @@
 			let newORKUrl = prompt("Enter new ORK URL:", "https://h4x22ork1.azurewebsites.net/");
 			const params = new URLSearchParams(window.location.search);
 			window.opener.postMessage("*" + newORKUrl, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
-            window.self.close();
+			const url = new URL(window.location.href);
+			url.origin = newORKUrl;
+			const newUrl = url.href;
+			window.location.href = newUrl; // rehome
 		}
 	</script>
 </body>
