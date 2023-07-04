@@ -19,148 +19,150 @@
 <!--===============================================================================================-->
 </head>
 <body>
-	<div class="limiter">
-		<div class="container-enclave" id="container-enclave-id" style="background-image: url('images/bg-01.jpg');">
-			<div id="div-si" style="display: none;" class="wrap-enclave">
-				<form class="enclave-form validate-form-si">
-					<span class="enclave-form-logo">
-						<img class="s_links" src="images/logo.png">
-					</span>
-
-					<span class="enclave-form-title p-b-34 p-t-27">
-						Sign-in
-					</span>
-
-
-					<div class="wrap-input100 validate-input-si" data-validate = "Enter username">
-						<input class="input100" type="text" name="username" placeholder="Username" style="text-transform: lowercase;">
-						<span class="focus-input100" data-placeholder="&#xf207;"></span>
-					</div>
-
-					<div class="wrap-input100 validate-input-si" data-validate="Enter password">
-						<input class="input100" type="password" name="pass" placeholder="Password">
-						<span class="focus-input100" data-placeholder="&#xf191;"></span>
-					</div>
-
-					
-					<div class="container-enclave-form-btn">
-						<button class="enclave-form-btn" id="submit-btn-si">
-							Login
-						</button>
-					</div>
-					<p class="txtalert p-t-35" id="alert-si"> </p>
-
-					<div class="loading" id ="loader" style="display:none"></div>
-
-					<div class="text-center p-t-90">
-						<u class="txt1" onclick="switchSignInUp()">
-							Don't have an account?
-						</u>
-						<span>
-							<u class="txt1 p-l-20" onclick="rehome()">
-								Don't trust this ORK?
-							</u>
-						</span>
-					</div>
-				</form>
-			</div>
-
-			<div style="display: block;" id="div-su" class="wrap-enclave">
-				<form class="enclave-form validate-form-su">
-					<span class="enclave-form-logo">
-						<img class="s_links" src="images/logo.png">
-					</span>
-
-					<span class="enclave-form-title p-b-34 p-t-27">
-						Sign-up
-					</span>
-
-					<div class="wrap-input100 validate-input-su" data-validate = "Enter username">
-						<input class="input100" type="text" name="username" placeholder="Username" style="text-transform: lowercase;">
-						<span class="focus-input100" data-placeholder="&#xf207;"></span>
-					</div>
-
-					<div class="wrap-input100 validate-input-su" data-validate="Enter password">
-						<input class="input100" type="password" name="pass" placeholder="Password">
-						<span class="focus-input100" data-placeholder="&#xf191;"></span>
-					</div>
-
-					<div class="wrap-input100 validate-input-su" data-validate="Repeat password">
-						<input class="input100" type="password" name="pass" placeholder="Repeat Password">
-						<span class="focus-input100" data-placeholder="&#xf191;"></span>
-					</div>
-					
-
-					<div class="txt2 p-t-5">	
-							Select 5 Orks
-					</div>
-					<div class = "dropdown" data-validate = "Select 3 orks">
-						<div class="loading" id ="orkloader"></div>
-						<select class="js-example-basic-multiple form-control" id="ork-drop-down" name="orks[]" multiple="multiple">
-					   </select>
-				   </div>
-
-					
-					<div class="container-enclave-form-btn  p-b-3 p-t-27">
-						<button class="enclave-form-btn" id="submit-btn-su">
-							Sign-up
-						</button>
-					</div>
-					<p class="txtalert p-t-15" id="alert-su"> </p>
-
-					<div class="loading" id ="loader-su" style="display:none"></div>
-
-					<div class="text-center p-t-30">
-						<u class="txt1" onclick="switchSignInUp()">
-							Login?
-						</u>
-						<span>
-							<u class="txt1 p-l-20" onclick="rehome()">
-								Don't trust this ORK?
-							</u>
-						</span>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
-
-
-	<div id="dropDownSelect1"></div>
 	<!--============================ CHECK THIS INTEGRITY HASH ============================================-->
 	<script class="s_links" type="module" src="./dist/main.bundle.js" integrity="sha384-NtYGhpJkMs8zsi1iav/8YrQVU0u/jMUfCd8raX9i2gEyMqzE+WaKqhjgZ65u80z2"></script>
 	<!--===================================================================================================-->
-	<script class="s_links" src="vendor/jquery/jquery-3.2.1.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-	<script type="text/javascript">
-		$(document).ready(function() {
-			$(".js-example-basic-multiple").select2({
-				maximumSelectionLength: 5
-			});
-			document.getElementById("div-si").style.display = "block";
-			document.getElementById("div-su").style.display = "none";
-		});
-
-		
-
-		function switchSignInUp(){
-			if(document.getElementById("div-su").style.display === "none"){
-				document.getElementById("div-su").style.display = "block"
-				document.getElementById("div-si").style.display = "none";
-			}else if(document.getElementById("div-si").style.display === "none"){
+	<div>
+		<div class="limiter">
+			<div class="container-enclave" id="container-enclave-id" style="background-image: url('images/bg-01.jpg');">
+				<div id="div-si" style="display: none;" class="wrap-enclave">
+					<form class="enclave-form validate-form-si">
+						<span class="enclave-form-logo">
+							<img class="s_links" src="images/logo.png">
+						</span>
+	
+						<span class="enclave-form-title p-b-34 p-t-27">
+							Sign-in
+						</span>
+	
+	
+						<div class="wrap-input100 validate-input-si" data-validate = "Enter username">
+							<input class="input100" type="text" name="username" placeholder="Username" style="text-transform: lowercase;">
+							<span class="focus-input100" data-placeholder="&#xf207;"></span>
+						</div>
+	
+						<div class="wrap-input100 validate-input-si" data-validate="Enter password">
+							<input class="input100" type="password" name="pass" placeholder="Password">
+							<span class="focus-input100" data-placeholder="&#xf191;"></span>
+						</div>
+	
+						
+						<div class="container-enclave-form-btn">
+							<button class="enclave-form-btn" id="submit-btn-si">
+								Login
+							</button>
+						</div>
+						<p class="txtalert p-t-35" id="alert-si"> </p>
+	
+						<div class="loading" id ="loader" style="display:none"></div>
+	
+						<div class="text-center p-t-90">
+							<u class="txt1" onclick="switchSignInUp()">
+								Don't have an account?
+							</u>
+							<span>
+								<u class="txt1 p-l-20" onclick="rehome()">
+									Don't trust this ORK?
+								</u>
+							</span>
+						</div>
+					</form>
+				</div>
+	
+				<div style="display: block;" id="div-su" class="wrap-enclave">
+					<form class="enclave-form validate-form-su">
+						<span class="enclave-form-logo">
+							<img class="s_links" src="images/logo.png">
+						</span>
+	
+						<span class="enclave-form-title p-b-34 p-t-27">
+							Sign-up
+						</span>
+	
+						<div class="wrap-input100 validate-input-su" data-validate = "Enter username">
+							<input class="input100" type="text" name="username" placeholder="Username" style="text-transform: lowercase;">
+							<span class="focus-input100" data-placeholder="&#xf207;"></span>
+						</div>
+	
+						<div class="wrap-input100 validate-input-su" data-validate="Enter password">
+							<input class="input100" type="password" name="pass" placeholder="Password">
+							<span class="focus-input100" data-placeholder="&#xf191;"></span>
+						</div>
+	
+						<div class="wrap-input100 validate-input-su" data-validate="Repeat password">
+							<input class="input100" type="password" name="pass" placeholder="Repeat Password">
+							<span class="focus-input100" data-placeholder="&#xf191;"></span>
+						</div>
+						
+	
+						<div class="txt2 p-t-5">	
+								Select 5 Orks
+						</div>
+						<div class = "dropdown" data-validate = "Select 3 orks">
+							<div class="loading" id ="orkloader"></div>
+							<select class="js-example-basic-multiple form-control" id="ork-drop-down" name="orks[]" multiple="multiple">
+						   </select>
+					   </div>
+	
+						
+						<div class="container-enclave-form-btn  p-b-3 p-t-27">
+							<button class="enclave-form-btn" id="submit-btn-su">
+								Sign-up
+							</button>
+						</div>
+						<p class="txtalert p-t-15" id="alert-su"> </p>
+	
+						<div class="loading" id ="loader-su" style="display:none"></div>
+	
+						<div class="text-center p-t-30">
+							<u class="txt1" onclick="switchSignInUp()">
+								Login?
+							</u>
+							<span>
+								<u class="txt1 p-l-20" onclick="rehome()">
+									Don't trust this ORK?
+								</u>
+							</span>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	
+	
+		<div id="dropDownSelect1"></div>
+		<script class="s_links" src="vendor/jquery/jquery-3.2.1.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+	
+		<script type="text/javascript">
+			$(document).ready(function() {
+				$(".js-example-basic-multiple").select2({
+					maximumSelectionLength: 5
+				});
 				document.getElementById("div-si").style.display = "block";
 				document.getElementById("div-su").style.display = "none";
+			});
+	
+			
+	
+			function switchSignInUp(){
+				if(document.getElementById("div-su").style.display === "none"){
+					document.getElementById("div-su").style.display = "block"
+					document.getElementById("div-si").style.display = "none";
+				}else if(document.getElementById("div-si").style.display === "none"){
+					document.getElementById("div-si").style.display = "block";
+					document.getElementById("div-su").style.display = "none";
+				}
 			}
-		}
-
-		function rehome(){
-			let newORKUrl = prompt("Enter new ORK URL:", "https://h4x22ork1.azurewebsites.net/");
-			const params = new URLSearchParams(window.location.search);
-			window.opener.postMessage("*" + newORKUrl, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
-			window.close();
-		}
-	</script>
+	
+			function rehome(){
+				let newORKUrl = prompt("Enter new ORK URL:", "https://h4x22ork1.azurewebsites.net/");
+				const params = new URLSearchParams(window.location.search);
+				window.opener.postMessage("*" + newORKUrl, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
+				window.close();
+			}
+		</script>
+	</div>
 </body>
 
 </html>
