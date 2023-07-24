@@ -19,7 +19,9 @@ import Point from "../Ed25519/point.js";
 import AuthenticateResponse from "../Models/AuthenticateResponse.js";
 import ConvertResponse from "../Models/ConvertResponse.js";
 import EncryptedConvertResponse from "../Models/EncryptedConvertResponse.js";
-import TideJWT from "../Models/TideJWT.js";
+import PreSignInResponse from "../Models/PreSignInResponse.js";
+import SignInResponse from "../Models/SignInResponse.js";
+import TideJWT from "../ModelsToSign/TideJWT.js";
 import { createAESKey } from "../Tools/AES.js";
 import { SHA256_Digest, SHA512_Digest } from "../Tools/Hash.js";
 import { BigIntToByteArray, Bytes2Hex, ConcatUint8Arrays, RandomBigInt, StringToUint8Array, bytesToBase64, median } from "../Tools/Utils.js";
@@ -102,11 +104,11 @@ export async function CmkConvertReply(id, convertResponses, lis, prismAuthis, gC
 
 /**
  * @param {string[]} encSig
- * @param {string[]} encCVKRi 
+ * @param {string[]} encGRData 
  * @param {object} data_for_PreSignInCVK 
  * @param {Point[]} vgORKi
  */
-export async function PreSignInCVKReply(encSig, encCVKRi, data_for_PreSignInCVK, vgORKi){
+export async function PreSignInCVKReply(encSig, encGRData, data_for_PreSignInCVK, vgORKi){
     const pre_authResp = encSig.map(async (enc, i) => AuthenticateResponse.from(await AES.decryptData(enc, data_for_PreSignInCVK.prismAuthis[i])));
     const authResp = await Promise.all(pre_authResp);
 
@@ -123,25 +125,31 @@ export async function PreSignInCVKReply(encSig, encCVKRi, data_for_PreSignInCVK,
     const pre_ECDHi = vgORKi.map(async pub => await SHA256_Digest(pub.times(data_for_PreSignInCVK.SessKey).toArray()));
     const ECDHi = await Promise.all(pre_ECDHi);
 
-    const pre_gCVKRi = encCVKRi.map(async (enc, i) => Point.fromB64(await AES.decryptData(enc, ECDHi[i])));
-    const gCVKRi = await Promise.all(pre_gCVKRi);
-    const gCVKR = gCVKRi.reduce((sum, next) => sum.add(next));
+    const pre_gRs = encGRData.map(async (enc, i) => PreSignInResponse.from(await AES.decryptData(enc, ECDHi[i])));
+    const gRs = await Promise.all(pre_gRs);
+    const gCVKR = gRs.reduce((sum, next) => sum.add(next.GR1, Point.infinity));
+    const model_gR = gRs.every(gr => gr.GR2 == null) ? null : gRs.reduce((sum, next) => sum.add(next.GR2, Point.infinity));
 
-    return {gCVKR: gCVKR, S: S, ECDHi: ECDHi, gBlindH: gBlindH}
+    return {gCVKR: gCVKR, model_gR: model_gR, S: S, ECDHi: ECDHi, gBlindH: gBlindH}
 }
 
 /**
  * 
- * @param {string[]} encCVKSign 
+ * @param {string[]} encSigs 
  * @param {Point} gCVKR 
  * @param {string} jwt 
  * @param {Uint8Array[]} ECDHi 
  * @param {bigint[]} vLis
  */
-export async function SignInCVKReply(encCVKSign, gCVKR, jwt, ECDHi, vLis){
-    const pre_CVKSi = encCVKSign.map(async (enc, i) => BigInt(await AES.decryptData(enc, ECDHi[i])));
-    const CVKSi = await Promise.all(pre_CVKSi);
-    const CVKS = mod(CVKSi.reduce((sum, next, i) => sum + (next * vLis[i]), BigInt(0)));
+export async function SignInCVKReply(encSigs, gCVKR, jwt, ECDHi, vLis){
+    const pre_Sigs = encSigs.map(async (enc, i) => SignInResponse.from(await AES.decryptData(enc, ECDHi[i])));
+    const Sigs = await Promise.all(pre_Sigs);
+    const CVKS = mod(Sigs.reduce((sum, next, i) => sum + (next.S1 * vLis[i]), BigInt(0)));
+    const model_S = Sigs.every(s => s.S2 == null) ? null : mod(Sigs.reduce((sum, next, i) => sum + (next.S2 * vLis[i]), BigInt(0)));
+
+
+
+// Return R, s as a base64 string for the client to assemble themselves, no point pondering over models with infinite ways to add a signature
 
     return TideJWT.addSignature(jwt, CVKS, gCVKR);
 }

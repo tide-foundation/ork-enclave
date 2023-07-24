@@ -70,13 +70,17 @@ export default class NodeClient extends ClientBase {
      * 
      * @param {string} vuid 
      * @param {Point} gSessKeyPub 
+     * @param {boolean} modelToSignRequested
      */
-    async PreSignInCVK(vuid, gSessKeyPub){
-        const data = this._createFormData({ 'gSessKeyPub': gSessKeyPub.toBase64() })
+    async PreSignInCVK(vuid, gSessKeyPub, modelToSignRequested=false){
+        const data = this._createFormData({ 
+            'gSessKeyPub': gSessKeyPub.toBase64(),
+            'modelToSignRequested': modelToSignRequested
+        })
         const response = await this._post(`/CVK/PreSignIn?uid=${vuid}`, data)
 
-        const encCVKR = await this._handleError(response, "PreSignInCVK");
-        return encCVKR;
+        const encGRData = await this._handleError(response, "PreSignInCVK");
+        return encGRData;
     }
 
     /**
@@ -89,9 +93,13 @@ export default class NodeClient extends ClientBase {
      * @param {Point} gCVKR 
      * @param {bigint} li 
      * @param {Point} gBlindH
+     * @param {string} mode
+     * @param {string} modelToSign
+     * @param {Point} gR2
      * @param {boolean} test
      */
-    async SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, li, gBlindH, test=false){
+    async SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, li, gBlindH, mode="default", modelToSign=null, gR2=null, test=false){
+        if(mode != "default" && (modelToSign == null || gR2 == null)) throw new Error("Model to sign expected");
         const data = this._createFormData({ 
             'jwt': jwt, 
             'timestamp2': timestamp2.toString(), 
@@ -100,11 +108,14 @@ export default class NodeClient extends ClientBase {
             'gCVKR': gCVKR.toBase64(),
             'li': li.toString(),
             'gBlindH': gBlindH.toBase64(),
+            'mode': mode,
+            'modelToSign': modelToSign,
+            'gR2': gR2.toBase64(),
             'test': test
         });
         const response = await this._post(`/CVK/SignIn?uid=${vuid}`, data)
-        const encCVKSign = await this._handleError(response, "SignInCVK");
-        return encCVKSign;
+        const encSigs = await this._handleError(response, "SignInCVK");
+        return encSigs;
     }
 
     /**

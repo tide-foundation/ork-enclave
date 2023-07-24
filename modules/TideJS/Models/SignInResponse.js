@@ -15,24 +15,19 @@
 // If not, see https://tide.org/licenses_tcoc2-0-0-en
 //
 
-
-export { default as Point } from './Ed25519/point.js';
-export { default as PrismFlow } from './Flow/Prism.js';
-export { default as NodeClient } from './Clients/NodeClient.js'
-export { default as SimClient } from './Clients/SimulatorClient.js'
-export { default as SimulatorFlow } from './Flow/Simulator.js';
-export { default as SignUp } from './Functions/SignUp.js';
-export { default as SignIn } from './Functions/SignIn.js';
-export { default as TideJWT } from "./ModelsToSign/TideJWT.js"
-
-import * as Utils from './Tools/Utils.js';
-export { Utils };
-
-import * as AES from './Tools/AES.js';
-export { AES };
-
-import * as Hash from './Tools/Hash.js';
-export { Hash };
-
-import * as EdDSA from './Tools/EdDSA.js'
-export { EdDSA };
+export default class SignInResponse{
+    /** 
+     * @param {bigint} S1
+     * @param {bigint} S2
+     */
+    constructor(S1, S2){
+        this.S1 = S1
+        this.S2 = S2
+    }
+    static from(data){
+        const obj = JSON.parse(data);
+        const s1 = BigInt(obj.S1)
+        const s2 = obj.S2 != null ? BigInt(obj.S2) : null;
+        return new SignInResponse(s1, s2);
+    }
+}

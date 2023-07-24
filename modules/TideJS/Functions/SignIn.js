@@ -31,12 +31,24 @@ export default class SignIn {
      * @example
      * {
      *  simulatorUrl: string
+     *  mode: string // what type of service are you signing up to (e.g. an OpenSSH server - "openssh"). If you aren't sure, don't include this field or set it to "default"
+     *  modelToSign: string // string representation of what you want to sign in this process. TODO: Clarify to user how this process works
      * }
      * @example
      * @param {object} config 
      */
     constructor(config) {
         if (!Object.hasOwn(config, 'simulatorUrl')) { throw Error("Simulator Url has not been included in config") }
+
+        /**
+         * @type {string}
+         */
+        this.mode = Object.hasOwn(config, 'mode') ? config.mode : "default";
+
+        /**
+         * @type {string}
+         */
+        this.modelToSign = Object.hasOwn(config, 'modelToSign') ? config.modelToSign : null;
 
         /**
          * @type {string}
@@ -77,9 +89,10 @@ export default class SignIn {
         
         const vOrks = await simClient.GetUserORKs(convertData.VUID);
         authFlow.CVKorks = vOrks;
-        const authData = await authFlow.Authenticate_and_PreSignInCVK(uid, convertData.VUID, convertData.decChallengei, convertData.encAuthRequests, convertData.gSessKeyPub, convertData.data_for_PreSignInCVK);
+        const modelRequested = this.modelToSign == null ? false : true;
+        const authData = await authFlow.Authenticate_and_PreSignInCVK(uid, convertData.VUID, convertData.decChallengei, convertData.encAuthRequests, convertData.gSessKeyPub, convertData.data_for_PreSignInCVK, modelRequested);
 
-        const jwt = await authFlow.SignInCVK(convertData.VUID, convertData.jwt, authData.vlis, convertData.timestamp2, convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH);
+        const jwt = await authFlow.SignInCVK(convertData.VUID, convertData.jwt, authData.vlis, convertData.timestamp2, convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, this.mode, this.modelToSign, authData.model_gR);
         return jwt;
     }
 }

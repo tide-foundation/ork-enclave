@@ -23,7 +23,7 @@ import dKeyGenerationFlow from "../Flow/dKeyGenerationFlow.js"
 import { createAESKey, encryptData } from "../Tools/AES.js"
 import SignIn from "./SignIn.js"
 import dKeyAuthenticationFlow from "../Flow/dKeyAuthenticationFlow.js"
-import TideJWT from "../Models/TideJWT.js"
+import TideJWT from "../ModelsToSign/TideJWT.js"
 import dDecryptionTestFlow from "../Flow/dDecryptionTestFlow.js"
 import HashToPoint from "../Tools/H2P.js"
 
