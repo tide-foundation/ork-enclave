@@ -128,7 +128,7 @@ export async function PreSignInCVKReply(encSig, encGRData, data_for_PreSignInCVK
     const pre_gRs = encGRData.map(async (enc, i) => PreSignInResponse.from(await AES.decryptData(enc, ECDHi[i])));
     const gRs = await Promise.all(pre_gRs);
     const gCVKR = gRs.reduce((sum, next) => sum.add(next.GR1, Point.infinity));
-    const model_gR = gRs.every(gr => gr.GR2 == null) ? null : gRs.reduce((sum, next) => sum.add(next.GR2, Point.infinity));
+    const model_gR = gRs.every(gr => gr.GR2 != null) ? gRs.reduce((sum, next) => sum.add(next.GR2, Point.infinity)) : null;
 
     return {gCVKR: gCVKR, model_gR: model_gR, S: S, ECDHi: ECDHi, gBlindH: gBlindH}
 }
@@ -136,20 +136,18 @@ export async function PreSignInCVKReply(encSig, encGRData, data_for_PreSignInCVK
 /**
  * 
  * @param {string[]} encSigs 
+ * @param {Point} modelR
  * @param {Point} gCVKR 
  * @param {string} jwt 
  * @param {Uint8Array[]} ECDHi 
  * @param {bigint[]} vLis
  */
-export async function SignInCVKReply(encSigs, gCVKR, jwt, ECDHi, vLis){
+export async function SignInCVKReply(encSigs, gCVKR, modelR, jwt, ECDHi, vLis){
     const pre_Sigs = encSigs.map(async (enc, i) => SignInResponse.from(await AES.decryptData(enc, ECDHi[i])));
     const Sigs = await Promise.all(pre_Sigs);
     const CVKS = mod(Sigs.reduce((sum, next, i) => sum + (next.S1 * vLis[i]), BigInt(0)));
-    const model_S = Sigs.every(s => s.S2 == null) ? null : mod(Sigs.reduce((sum, next, i) => sum + (next.S2 * vLis[i]), BigInt(0)));
+    const model_S = Sigs.every(s => s.S2 != null) ? mod(Sigs.reduce((sum, next, i) => sum + (next.S2 * vLis[i]), BigInt(0))) : null;
+    const modelSig = model_S != null ? bytesToBase64(ConcatUint8Arrays([modelR.toArray(), BigIntToByteArray(model_S)])) : "no signature";
 
-
-
-// Return R, s as a base64 string for the client to assemble themselves, no point pondering over models with infinite ways to add a signature
-
-    return TideJWT.addSignature(jwt, CVKS, gCVKR);
+    return {jwt: TideJWT.addSignature(jwt, CVKS, gCVKR), modelSig: modelSig};
 }

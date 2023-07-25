@@ -143,6 +143,6 @@ export default class dKeyAuthenticationFlow{
         const pre_encSigs = cvkClients.map((client, i) => client.SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, vlis[i], gBlindH, mode, modelToSign, gR2, test));
         const encSigs = await Promise.all(pre_encSigs);
 
-        return await SignInCVKReply(encSigs, gCVKR, jwt, ECDHi, vlis);
+        return await SignInCVKReply(encSigs, gCVKR, gR2, jwt, ECDHi, vlis);
     }
 }

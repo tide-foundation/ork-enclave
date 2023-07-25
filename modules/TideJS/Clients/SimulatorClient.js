@@ -18,6 +18,7 @@
 import Point from "../Ed25519/point.js"
 import ClientBase from "./ClientBase.js"
 
+// TODO: Remove this client. All API requests for blockchain stuff should go through ORKs
 export default class SimulatorClient extends ClientBase {
     /**
      * @param {string} url

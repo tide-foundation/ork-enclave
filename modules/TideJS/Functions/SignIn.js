@@ -92,7 +92,7 @@ export default class SignIn {
         const modelRequested = this.modelToSign == null ? false : true;
         const authData = await authFlow.Authenticate_and_PreSignInCVK(uid, convertData.VUID, convertData.decChallengei, convertData.encAuthRequests, convertData.gSessKeyPub, convertData.data_for_PreSignInCVK, modelRequested);
 
-        const jwt = await authFlow.SignInCVK(convertData.VUID, convertData.jwt, authData.vlis, convertData.timestamp2, convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, this.mode, this.modelToSign, authData.model_gR);
-        return jwt;
+        const {jwt, modelSig} = await authFlow.SignInCVK(convertData.VUID, convertData.jwt, authData.vlis, convertData.timestamp2, convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, this.mode, this.modelToSign, authData.model_gR);
+        return modelSig == "" ? jwt : {jwt : jwt, modelSig : modelSig};
     }
 }
