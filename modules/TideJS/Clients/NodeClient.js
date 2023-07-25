@@ -109,8 +109,8 @@ export default class NodeClient extends ClientBase {
             'li': li.toString(),
             'gBlindH': gBlindH.toBase64(),
             'mode': mode,
-            'modelToSign': modelToSign,
-            'gR2': gR2.toBase64(),
+            'modelToSign': modelToSign == null ? "" : modelToSign,
+            'gR2': gR2 == null ? null : gR2.toBase64(),
             'test': test
         });
         const response = await this._post(`/CVK/SignIn?uid=${vuid}`, data)

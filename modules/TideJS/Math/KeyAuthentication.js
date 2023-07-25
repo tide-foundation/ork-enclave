@@ -127,8 +127,8 @@ export async function PreSignInCVKReply(encSig, encGRData, data_for_PreSignInCVK
 
     const pre_gRs = encGRData.map(async (enc, i) => PreSignInResponse.from(await AES.decryptData(enc, ECDHi[i])));
     const gRs = await Promise.all(pre_gRs);
-    const gCVKR = gRs.reduce((sum, next) => sum.add(next.GR1, Point.infinity));
-    const model_gR = gRs.every(gr => gr.GR2 != null) ? gRs.reduce((sum, next) => sum.add(next.GR2, Point.infinity)) : null;
+    const gCVKR = gRs.reduce((sum, next) => sum.add(next.GR1), Point.infinity);
+    const model_gR = gRs.every(gr => gr.GR2 != null) ? gRs.reduce((sum, next) => sum.add(next.GR2), Point.infinity) : null;
 
     return {gCVKR: gCVKR, model_gR: model_gR, S: S, ECDHi: ECDHi, gBlindH: gBlindH}
 }
