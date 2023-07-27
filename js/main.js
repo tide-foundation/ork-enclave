@@ -159,7 +159,7 @@ var activeOrks = [];
         var signin = new SignIn(config);
         try{
             if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
-            const jwt = await signin.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign in flow
+            const {jwt} = await signin.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign in flow
             window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
             window.self.close();
         }catch(e){
@@ -191,7 +191,7 @@ var activeOrks = [];
         var signup = new SignUp(config);
         try{
             if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
-            const jwt = await signup.start(user, pass, params.get("vendorPublic"), params.get("vendorUrl")); // get jwt for this vendor from sign up flow
+            const {jwt} = await signup.start(user, pass, params.get("vendorPublic"), params.get("vendorUrl")); // get jwt for this vendor from sign up flow
             window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
             window.self.close();
         }catch(e){

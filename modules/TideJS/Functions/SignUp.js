@@ -56,6 +56,11 @@ export default class SignUp {
          * @type {string}
          */
         this.simulatorUrl = config.simulatorUrl
+
+        /**
+         * @type {string}
+         */
+        this.mode = Object.hasOwn(config, 'mode') ? config.mode : "default";
     }
 
     /**
@@ -96,8 +101,10 @@ export default class SignUp {
         const jwt = await this.testSignIn(uid, gUser, gPass, gVVK, cmkGenShardData.gK1, cvkGenShardData.gK1);
 
         // Test dDecrypt
-        const dDecryptFlow = new dDecryptionTestFlow(vendorUrl, Point.fromB64(gVVK), cvkGenShardData.gK1, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
-        await dDecryptFlow.startTest();
+        if(mode == "default"){
+            const dDecryptFlow = new dDecryptionTestFlow(vendorUrl, Point.fromB64(gVVK), cvkGenShardData.gK1, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
+            await dDecryptFlow.startTest();
+        }
 
         // Commit newly generated keys
         const pre_cmkCommit = cmkGenFlow.Commit(uid, cmkSendShardData.S, "CMK");
@@ -106,7 +113,11 @@ export default class SignUp {
         await pre_cmkCommit;
         await pre_cvkCommit;
 
-        return jwt;
+        if(mode == "openssh") return {jwt: jwt, public: cvkGenShardData.gK1.getOpenSSHPublicKey()}
+        else{
+            return {jwt};
+        }
+        
     }
 
     /**
@@ -133,7 +144,7 @@ export default class SignUp {
         authFlow.CVKorks = this.cvkOrkInfo;
         const authData = await authFlow.Authenticate_and_PreSignInCVK(uid, convertData.VUID, convertData.decChallengei, convertData.encAuthRequests, convertData.gSessKeyPub, convertData.data_for_PreSignInCVK, false, true);
 
-        const jwt = await authFlow.SignInCVK(convertData.VUID, convertData.jwt, authData.vlis, convertData.timestamp2, convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, "default", null, null, true);
+        const {jwt} = await authFlow.SignInCVK(convertData.VUID, convertData.jwt, authData.vlis, convertData.timestamp2, convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, "default", null, null, true);
         if(!(await TideJWT.verify(jwt, cvkPub))) throw Error("Test sign in failed");
         return jwt;
     }
