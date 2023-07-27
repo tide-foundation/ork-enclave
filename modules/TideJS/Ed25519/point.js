@@ -202,8 +202,8 @@ export default class Point {
     }
 
     getOpenSSHPublicKey(){
-        // TODO: Declare bytes here instead of converting them from ASCII
-        const staticBytes = base64ToBytes("AAAAC3NzaC1lZDI1NTE5AAAAI");
+        // these bytes read: 0, 0, 0, 11, "ssh-ed25519", 0, 0, 0, 32
+        const staticBytes = new Uint8Array([0x00, 0x00, 0x00, 0x0b, 0x73, 0x73, 0x68, 0x2d, 0x65, 0x64, 0x32, 0x35, 0x35, 0x31, 0x39, 0x00, 0x00, 0x00, 0x20]);
         const keyBytes = this.toArray();
         const combinedBytesB64 = bytesToBase64(ConcatUint8Arrays([staticBytes, keyBytes]));
 
