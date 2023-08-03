@@ -115,7 +115,7 @@ export default class SignIn {
 
         const vOrks = await simClient.GetUserORKs(this.convertData.VUID);
         this.authFlow.CVKorks = vOrks;
-        const authData = await this.authFlow.Authenticate_and_PreSignInCVK(uid, this.convertData.VUID, this.convertData.decChallengei, this.convertData.encAuthRequests, this.convertData.gSessKeyPub, this.convertData.data_for_PreSignInCVK, modelRequested);
+        const authData = await this.authFlow.Authenticate_and_PreSignInCVK(this.uid, this.convertData.VUID, this.convertData.decChallengei, this.convertData.encAuthRequests, this.convertData.gSessKeyPub, this.convertData.data_for_PreSignInCVK, modelRequested);
 
         const {jwt, modelSig} = await this.authFlow.SignInCVK(this.convertData.VUID, this.convertData.jwt, authData.vlis, this.convertData.timestamp2, this.convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, this.mode, modelToSign, authData.model_gR);
         
