@@ -157,6 +157,9 @@ var activeOrks = [];
         } 
         const params = new URLSearchParams(window.location.search);
         const signin = new SignIn(config);
+
+
+
         try{
             if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
 
@@ -213,6 +216,11 @@ var activeOrks = [];
         }
         const params = new URLSearchParams(window.location.search);
         const signup = new SignUp(config);
+
+        var x = params.get("vendorUrlSig");
+        var y = params.get("vendorPublic");
+        var z = params.get("vendorUrl");
+
         try{
             if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
 
