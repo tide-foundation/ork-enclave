@@ -173,7 +173,7 @@ var activeOrks = [];
                     return new Promise((resolve) => {
                         window.addEventListener("message", (event) => {
                             if(event.origin == params.get("vendorUrl")) resolve(event.data); // resolve promise when window listener has recieved msg
-                    }, false);
+                        }, false);
                     });
                 }
                 const userData = await signin.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign in flow
