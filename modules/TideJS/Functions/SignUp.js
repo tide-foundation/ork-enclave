@@ -141,7 +141,7 @@ export default class SignUp {
             if(this.savedState == undefined) throw Error("Saved state not defined");
 
             // Test sign in
-            const {jwt, modelSig} = await this.testSignIn(this.savedState.uid, this.savedState.gUser, this.savedState.gPass, this.savedState.gVVK, this.savedState.cmkPub, this.savedState.cvkPub, this.mode, modelToSign);
+            const {jwt, modelSig} = await this.testSignIn(this.savedState.uid, this.savedState.gUser, this.savedState.gPass, this.savedState.gVVK, this.savedState.cmkPub, this.savedState.cvkPub, modelToSign);
 
             // Test dDecrypt
             if(this.mode == "default"){
@@ -178,7 +178,6 @@ export default class SignUp {
      * @param {string} gVVK 
      * @param {Point} cmkPub 
      * @param {Point} cvkPub 
-     * @param {string} mode
      * @param {string} modelToSign
      * @returns 
      */
