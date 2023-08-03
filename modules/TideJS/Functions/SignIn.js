@@ -135,7 +135,7 @@ export default class SignIn {
                 TideJWT: jwt, 
                 modelSig: modelSig
             };
-        }catch{
+        }catch(e){
             return {
                 ok: false,
                 message: e
