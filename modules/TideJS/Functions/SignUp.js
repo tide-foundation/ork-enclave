@@ -135,8 +135,8 @@ export default class SignUp {
 
         // Test dDecrypt
         if(this.mode == "default"){
-            const dDecryptFlow = new dDecryptionTestFlow(this.savedState.vendorUrl, Point.fromB64(this.savedState.gVVK), this.savedState.cvkPub, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
-            await dDecryptFlow.startTest();
+            //       const dDecryptFlow = new dDecryptionTestFlow(this.savedState.vendorUrl, Point.fromB64(this.savedState.gVVK), this.savedState.cvkPub, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
+           //         await dDecryptFlow.startTest();
         }
 
         // Commit newly generated keys
