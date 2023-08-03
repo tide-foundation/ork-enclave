@@ -242,7 +242,7 @@ var activeOrks = [];
                         }, false);
                     });
                 }
-                const userData = await signip.start(user, pass, params.get("vendorPublic"), params.get("vendorUrl")); // get jwt for this vendor from sign in flow
+                const userData = await signup.start(user, pass, params.get("vendorPublic"), params.get("vendorUrl")); // get jwt for this vendor from sign in flow
                 const pre_model = waitForSignal();
                 window.opener.postMessage(userData, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
                 const model = await pre_model; // model to sign from page calling the enclave
