@@ -61,6 +61,13 @@ export default class SignUp {
          * @type {string}
          */
         this.mode = Object.hasOwn(config, 'mode') ? config.mode : "default";
+
+        /**
+         * @type {string}
+         */
+        this.modelToSign = Object.hasOwn(config, 'modelToSign') ? config.modelToSign : null;
+
+        this.savedState = undefined;
     }
 
     /**
@@ -97,27 +104,53 @@ export default class SignUp {
 
         const cmkSendShardData = await pre_cmkSendShardData;
 
+        this.savedState = {
+            uid: uid,
+            VUID: VUID,
+            gUser: gUser,
+            gPass: gPass,
+            gVVK: gVVK,
+            cmkPub: cmkGenShardData.gK1,
+            cvkPub: cvkGenShardData.gK1,
+            vendorUrl: vendorUrl,
+            cmkSig: cmkSendShardData.S,
+            cvkSig: cvkSendShardData.S,
+            cmkFlow: cmkGenFlow,
+            cvkFlow: cvkGenFlow
+        }
+
+        // end here
+        return {
+            dataType: "userData",
+            publicKey: cvkGenShardData.gK1.toBase64(),
+            uid: VUID
+        };
+    }
+
+    async continue(modelToSign=null){
+        if(this.savedState == undefined) throw Error("Saved state not defined");
+
         // Test sign in
-        const jwt = await this.testSignIn(uid, gUser, gPass, gVVK, cmkGenShardData.gK1, cvkGenShardData.gK1);
+        const {jwt, modelSig} = await this.testSignIn(this.savedState.uid, this.savedState.gUser, this.savedState.gPass, this.savedState.gVVK, this.savedState.cmkPub, this.savedState.cvkPub, this.mode, modelToSign);
 
         // Test dDecrypt
-        if(mode == "default"){
-            const dDecryptFlow = new dDecryptionTestFlow(vendorUrl, Point.fromB64(gVVK), cvkGenShardData.gK1, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
+        if(this.mode == "default"){
+            const dDecryptFlow = new dDecryptionTestFlow(this.savedState.vendorUrl, Point.fromB64(this.savedState.gVVK), this.savedState.cvkPub, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
             await dDecryptFlow.startTest();
         }
 
         // Commit newly generated keys
-        const pre_cmkCommit = cmkGenFlow.Commit(uid, cmkSendShardData.S, "CMK");
-        const pre_cvkCommit = cvkGenFlow.Commit(VUID, cvkSendShardData.S, "CVK");
+        const pre_cmkCommit = this.savedState.cmkFlow.Commit(this.savedState.uid, this.savedState.cmkSig, "CMK");
+        const pre_cvkCommit = this.savedState.cvkFlow.Commit(this.savedState.VUID, this.savedState.cvkSig, "CVK");
 
         await pre_cmkCommit;
         await pre_cvkCommit;
 
-        if(mode == "openssh") return {jwt: jwt, public: cvkGenShardData.gK1.getOpenSSHPublicKey()}
-        else{
-            return {jwt};
-        }
-        
+        return {
+            dataType: "completed",
+            TideJWT: jwt, 
+            modelSig: modelSig
+        };
     }
 
     /**
@@ -127,9 +160,14 @@ export default class SignUp {
      * @param {string} gVVK 
      * @param {Point} cmkPub 
      * @param {Point} cvkPub 
+     * @param {string} mode
+     * @param {string} modelToSign
      * @returns 
      */
-    async testSignIn(uid, gUser, gPass, gVVK, cmkPub, cvkPub){
+    async testSignIn(uid, gUser, gPass, gVVK, cmkPub, cvkPub, modelToSign_p=null){
+        const modelRequested = (this.modelToSign == null && modelToSign_p == null) ? false : true;
+        const modelToSign = this.modelToSign == null ? modelToSign_p : this.modelToSign; // figure out which one is the not null, if both are null, it will still be null
+
         const startTime = BigInt(Math.floor(Date.now() / 1000));
         const r1 = RandomBigInt();
         const r2 = RandomBigInt();
@@ -142,11 +180,11 @@ export default class SignUp {
         const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK, true);
         
         authFlow.CVKorks = this.cvkOrkInfo;
-        const authData = await authFlow.Authenticate_and_PreSignInCVK(uid, convertData.VUID, convertData.decChallengei, convertData.encAuthRequests, convertData.gSessKeyPub, convertData.data_for_PreSignInCVK, false, true);
+        const authData = await authFlow.Authenticate_and_PreSignInCVK(uid, convertData.VUID, convertData.decChallengei, convertData.encAuthRequests, convertData.gSessKeyPub, convertData.data_for_PreSignInCVK, modelRequested, true);
 
-        const {jwt} = await authFlow.SignInCVK(convertData.VUID, convertData.jwt, authData.vlis, convertData.timestamp2, convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, "default", null, null, true);
-        if(!(await TideJWT.verify(jwt, cvkPub))) throw Error("Test sign in failed");
-        return jwt;
+        const resp = await authFlow.SignInCVK(convertData.VUID, convertData.jwt, authData.vlis, convertData.timestamp2, convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, this.mode, modelToSign, authData.model_gR, true);
+        if(!(await TideJWT.verify(resp.jwt, cvkPub))) throw Error("Test sign in failed");
+        return resp;
     }
 
     /**

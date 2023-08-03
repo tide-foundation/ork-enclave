@@ -156,11 +156,35 @@ var activeOrks = [];
             simulatorUrl: 'http://host.docker.internal:2000/'
         } 
         const params = new URLSearchParams(window.location.search);
-        var signin = new SignIn(config);
+        const signin = new SignIn(config);
         try{
             if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
-            const {jwt} = await signin.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign in flow
-            window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
+
+            const mode = params.get("mode");
+            const modelToSign = params.get("modelToSign") == "" ? null : params.get("modelToSign");
+            let resp;
+            if(mode == "default" || modelToSign != null){
+                // default mode (no model to sign) or model to sign already exists
+                await signin.start(user, pass, params.get("vendorPublic"));
+                resp = await signin.continue(modelToSign)
+            }else{
+                // wait for response (model to sign) - ok to not remove event handler because this page will close soon anyways 
+                const waitForSignal = () => {
+                    return new Promise((resolve) => {
+                        window.addEventListener("message", (event) => {
+                            if(event.origin == params.get("vendorUrl")) resolve(event.data); // resolve promise when window listener has recieved msg
+                    }, false);
+                    });
+                }
+                const userData = await signin.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign in flow
+                const pre_model = waitForSignal();
+                window.opener.postMessage(userData, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
+                const model = await pre_model; // model to sign from page calling the enclave
+                
+                resp = await signin.continue(model);
+            }
+
+            window.opener.postMessage(resp, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
             window.self.close();
         }catch(e){
             $('#alert-si').text(e);
@@ -188,11 +212,35 @@ var activeOrks = [];
             simulatorUrl: 'http://host.docker.internal:2000/'
         }
         const params = new URLSearchParams(window.location.search);
-        var signup = new SignUp(config);
+        const signup = new SignUp(config);
         try{
             if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
-            const {jwt} = await signup.start(user, pass, params.get("vendorPublic"), params.get("vendorUrl")); // get jwt for this vendor from sign up flow
-            window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
+
+            const mode = params.get("mode");
+            const modelToSign = params.get("modelToSign") == "" ? null : params.get("modelToSign");
+
+            let resp;
+            if(mode == "default" || modelToSign != null){
+                // default mode (no model to sign) or model to sign already exists
+                await signup.start(user, pass, params.get("vendorPublic"), params.get("vendorUrl"));
+                resp = await signup.continue(modelToSign)
+            }else{
+                // wait for response (model to sign) - ok to not remove event handler because this page will close soon anyways 
+                const waitForSignal = () => {
+                    return new Promise((resolve) => {
+                        window.addEventListener("message", (event) => {
+                            if(event.origin == params.get("vendorUrl")) resolve(event.data); // resolve promise when window listener has recieved msg
+                        }, false);
+                    });
+                }
+                const userData = await signip.start(user, pass, params.get("vendorPublic"), params.get("vendorUrl")); // get jwt for this vendor from sign in flow
+                const pre_model = waitForSignal();
+                window.opener.postMessage(userData, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
+                const model = await pre_model; // model to sign from page calling the enclave
+                
+                resp = await signup.continue(model);
+            }
+            window.opener.postMessage(resp, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
             window.self.close();
         }catch(e){
             $('#alert-su').text(e);

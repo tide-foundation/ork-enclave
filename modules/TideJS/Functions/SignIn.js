@@ -54,6 +54,10 @@ export default class SignIn {
          * @type {string}
          */
         this.simulatorUrl = config.simulatorUrl
+
+        this.authFlow = undefined
+        this.convertData = undefined
+        this.uid = undefined
     }
 
     /**
@@ -86,13 +90,39 @@ export default class SignIn {
 
         const authFlow = new dKeyAuthenticationFlow(cmkOrkInfo);
         const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK);
-        
-        const vOrks = await simClient.GetUserORKs(convertData.VUID);
-        authFlow.CVKorks = vOrks;
-        const modelRequested = this.modelToSign == null ? false : true;
-        const authData = await authFlow.Authenticate_and_PreSignInCVK(uid, convertData.VUID, convertData.decChallengei, convertData.encAuthRequests, convertData.gSessKeyPub, convertData.data_for_PreSignInCVK, modelRequested);
 
-        const {jwt, modelSig} = await authFlow.SignInCVK(convertData.VUID, convertData.jwt, authData.vlis, convertData.timestamp2, convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, this.mode, this.modelToSign, authData.model_gR);
-        return modelSig == "" ? {jwt} : {jwt : jwt, modelSig : modelSig};
+        const cvkPub = await simClient.GetKeyPublic(convertData.VUID);
+
+        this.authFlow = authFlow
+        this.convertData = convertData
+        this.uid = uid
+
+        return {
+            dataType: "userData",
+            publicKey: cvkPub.toBase64(),
+            uid: convertData.VUID
+        };
+    }
+
+    // User can optionally add a modelToSign into the SignIn process now
+    async continue(modelToSign_p=null){
+        if(this.convertData == undefined || this.uid == undefined || this.authFlow == undefined) throw Error("Values must be defined before hand")
+
+        const modelRequested = (this.modelToSign == null && modelToSign_p == null) ? false : true;
+        const modelToSign = this.modelToSign == null ? modelToSign_p : this.modelToSign; // figure out which one is the not null, if both are null, it will still be null
+
+        const simClient = new SimulatorClient(this.simulatorUrl);
+
+        const vOrks = await simClient.GetUserORKs(this.convertData.VUID);
+        this.authFlow.CVKorks = vOrks;
+        const authData = await this.authFlow.Authenticate_and_PreSignInCVK(uid, this.convertData.VUID, this.convertData.decChallengei, this.convertData.encAuthRequests, this.convertData.gSessKeyPub, this.convertData.data_for_PreSignInCVK, modelRequested);
+
+        const {jwt, modelSig} = await this.authFlow.SignInCVK(this.convertData.VUID, this.convertData.jwt, authData.vlis, this.convertData.timestamp2, this.convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, this.mode, modelToSign, authData.model_gR);
+        
+        return {
+            dataType: "completed",
+            TideJWT: jwt, 
+            modelSig: modelSig
+        };
     }
 }

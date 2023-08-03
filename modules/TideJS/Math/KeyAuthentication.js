@@ -147,7 +147,7 @@ export async function SignInCVKReply(encSigs, gCVKR, modelR, jwt, ECDHi, vLis){
     const Sigs = await Promise.all(pre_Sigs);
     const CVKS = mod(Sigs.reduce((sum, next, i) => sum + (next.S1 * vLis[i]), BigInt(0)));
     const model_S = Sigs.every(s => s.S2 != null) ? mod(Sigs.reduce((sum, next, i) => sum + (next.S2 * vLis[i]), BigInt(0))) : null;
-    const modelSig = model_S != null ? bytesToBase64(ConcatUint8Arrays([modelR.toArray(), BigIntToByteArray(model_S)])) : "no signature";
+    const modelSig = model_S != null ? bytesToBase64(ConcatUint8Arrays([modelR.toArray(), BigIntToByteArray(model_S)])) : null;
 
     return {jwt: TideJWT.addSignature(jwt, CVKS, gCVKR), modelSig: modelSig};
 }
