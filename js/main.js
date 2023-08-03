@@ -152,19 +152,21 @@ var activeOrks = [];
 
     async function signin(user, pass) {
         $('#loader').show();
-        var config = {
-            simulatorUrl: 'http://host.docker.internal:2000/'
-        } 
+        
         const params = new URLSearchParams(window.location.search);
+        const mode = params.get("mode");
+        const modelToSign = params.get("modelToSign") == "" ? null : params.get("modelToSign");
+
+        var config = {
+            simulatorUrl: 'http://host.docker.internal:2000/',
+            mode: mode,
+            modelToSign: modelToSign
+        } 
         const signin = new SignIn(config);
-
-
-
         try{
             if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
 
-            const mode = params.get("mode");
-            const modelToSign = params.get("modelToSign") == "" ? null : params.get("modelToSign");
+            
             let resp;
             if(mode == "default" || modelToSign != null){
                 // default mode (no model to sign) or model to sign already exists
@@ -209,23 +211,22 @@ var activeOrks = [];
         });
         var cvkOrkInfo = activeOrks.sort(() => 0.5 - Math.random()).slice(0, 5).map(a => [a[0], a[2], Point.fromB64(a[3])]);// get first 5 random orks as cvk orks
         
+        const params = new URLSearchParams(window.location.search);
+        const mode = params.get("mode");
+        const modelToSign = params.get("modelToSign") == "" ? null : params.get("modelToSign");
+
         var config = {
             cmkOrkInfo: cmkOrkInfo,
             cvkOrkInfo: cvkOrkInfo,
-            simulatorUrl: 'http://host.docker.internal:2000/'
+            simulatorUrl: 'http://host.docker.internal:2000/',
+            mode: mode,
+            modelToSign: modelToSign
         }
-        const params = new URLSearchParams(window.location.search);
         const signup = new SignUp(config);
-
-        var x = params.get("vendorUrlSig");
-        var y = params.get("vendorPublic");
-        var z = params.get("vendorUrl");
-
         try{
             if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
 
-            const mode = params.get("mode");
-            const modelToSign = params.get("modelToSign") == "" ? null : params.get("modelToSign");
+            
 
             let resp;
             if(mode == "default" || modelToSign != null){
