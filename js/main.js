@@ -238,7 +238,7 @@ var activeOrks = [];
                 const waitForSignal = () => {
                     return new Promise((resolve) => {
                         window.addEventListener("message", (event) => {
-                            if(event.origin == params.get("vendorUrl")) resolve(event.data); // resolve promise when window listener has recieved msg
+                            if(event.origin == new URL(params.get("vendorUrl")).origin) resolve(event.data); // resolve promise when window listener has recieved msg
                         }, false);
                     });
                 }
