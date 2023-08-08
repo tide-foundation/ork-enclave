@@ -101,6 +101,7 @@ export default class SignIn {
             return {
                 ok: true,
                 dataType: "userData",
+                newAccount: false, // line will change when CVKs are sometimes created here
                 publicKey: cvkPub.toBase64(),
                 uid: convertData.VUID
             };

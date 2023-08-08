@@ -124,6 +124,7 @@ export default class SignUp {
             return {
                 ok: true,
                 dataType: "userData",
+                newAccount: true, // needed for when sign in ALSO creates CVKs
                 publicKey: cvkGenShardData.gK1.toBase64(),
                 uid: VUID
             };
