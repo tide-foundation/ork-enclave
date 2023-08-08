@@ -118,6 +118,7 @@ export default class SignIn {
     async continue(modelToSign_p=null){
         try{
             if(this.convertData == undefined || this.uid == undefined || this.authFlow == undefined) throw Error("Values must be defined before hand")
+            if(modelToSign_p == null && this.modelToSign == null) this.mode = "default"; // revert mode to default if no model to sign provided
 
             const modelRequested = (this.modelToSign == null && modelToSign_p == null) ? false : true;
             const modelToSign = this.modelToSign == null ? modelToSign_p : this.modelToSign; // figure out which one is the not null, if both are null, it will still be null

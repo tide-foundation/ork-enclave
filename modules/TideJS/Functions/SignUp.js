@@ -140,6 +140,7 @@ export default class SignUp {
     async continue(modelToSign=null){
         try{
             if(this.savedState == undefined) throw Error("Saved state not defined");
+            if(modelToSign == null && this.modelToSign == null) this.mode = "default"; // revert mode to default if no model to sign provided
 
             // Test sign in
             const {jwt, modelSig} = await this.testSignIn(this.savedState.uid, this.savedState.gUser, this.savedState.gPass, this.savedState.gVVK, this.savedState.cmkPub, this.savedState.cvkPub, modelToSign);
