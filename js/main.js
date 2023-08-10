@@ -176,9 +176,11 @@ var activeOrks = [];
                 // wait for response (model to sign) - ok to not remove event handler because this page will close soon anyways 
                 const waitForSignal = () => {
                     return new Promise((resolve) => {
-                        window.addEventListener("message", (event) => {
+                        const handler = (event) =>{
+                            window.removeEventListener("message", handler);
                             if(event.origin == new URL(params.get("vendorUrl")).origin) resolve(event.data); // resolve promise when window listener has recieved msg
-                        }, false);
+                        }
+                        window.addEventListener("message", handler, false);
                     });
                 }
                 const userData = await signin.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign in flow
@@ -237,9 +239,11 @@ var activeOrks = [];
                 // wait for response (model to sign) - ok to not remove event handler because this page will close soon anyways 
                 const waitForSignal = () => {
                     return new Promise((resolve) => {
-                        window.addEventListener("message", (event) => {
+                        const handler = (event) =>{
+                            window.removeEventListener("message", handler);
                             if(event.origin == new URL(params.get("vendorUrl")).origin) resolve(event.data); // resolve promise when window listener has recieved msg
-                        }, false);
+                        }
+                        window.addEventListener("message", handler, false);
                     });
                 }
                 const userData = await signup.start(user, pass, params.get("vendorPublic"), params.get("vendorUrl")); // get jwt for this vendor from sign in flow
