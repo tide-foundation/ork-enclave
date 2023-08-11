@@ -152,15 +152,46 @@ var activeOrks = [];
 
     async function signin(user, pass) {
         $('#loader').show();
-        var config = {
-            simulatorUrl: 'https://prod-simulator.azurewebsites.net/'
-        } 
+        
         const params = new URLSearchParams(window.location.search);
-        var signin = new SignIn(config);
+        const mode = params.get("mode");
+        const modelToSign = params.get("modelToSign") == "" ? null : params.get("modelToSign");
+
+        var config = {
+            simulatorUrl: 'https://prod-simulator.azurewebsites.net/',
+            mode: mode,
+            modelToSign: modelToSign
+        } 
+        const signin = new SignIn(config);
         try{
             if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
-            const jwt = await signin.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign in flow
-            window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
+
+            
+            let resp;
+            if(mode == "default" || modelToSign != null){
+                // default mode (no model to sign) or model to sign already exists
+                await signin.start(user, pass, params.get("vendorPublic"));
+                resp = await signin.continue(modelToSign)
+            }else{
+                // wait for response (model to sign) - ok to not remove event handler because this page will close soon anyways 
+                const waitForSignal = () => {
+                    return new Promise((resolve) => {
+                        const handler = (event) =>{
+                            window.removeEventListener("message", handler);
+                            if(event.origin == new URL(params.get("vendorUrl")).origin) resolve(event.data); // resolve promise when window listener has recieved msg
+                        }
+                        window.addEventListener("message", handler, false);
+                    });
+                }
+                const userData = await signin.start(user, pass, params.get("vendorPublic")); // get jwt for this vendor from sign in flow
+                const pre_model = waitForSignal();
+                window.opener.postMessage(userData, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
+                const model = await pre_model; // model to sign from page calling the enclave
+                
+                resp = await signin.continue(model);
+            }
+
+            window.opener.postMessage(resp, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
             window.self.close();
         }catch(e){
             $('#alert-si').text(e);
@@ -182,17 +213,45 @@ var activeOrks = [];
         });
         var cvkOrkInfo = activeOrks.sort(() => 0.5 - Math.random()).slice(0, 5).map(a => [a[0], a[2], Point.fromB64(a[3])]);// get first 5 random orks as cvk orks
         
+        const params = new URLSearchParams(window.location.search);
+        const mode = params.get("mode");
+        const modelToSign = params.get("modelToSign") == "" ? null : params.get("modelToSign");
+
         var config = {
             cmkOrkInfo: cmkOrkInfo,
             cvkOrkInfo: cvkOrkInfo,
             simulatorUrl: 'https://prod-simulator.azurewebsites.net/'
         }
-        const params = new URLSearchParams(window.location.search);
-        var signup = new SignUp(config);
+        const signup = new SignUp(config);
         try{
             if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
-            const jwt = await signup.start(user, pass, params.get("vendorPublic"), params.get("vendorUrl")); // get jwt for this vendor from sign up flow
-            window.opener.postMessage(jwt, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
+
+            
+
+            let resp;
+            if(mode == "default" || modelToSign != null){
+                // default mode (no model to sign) or model to sign already exists
+                await signup.start(user, pass, params.get("vendorPublic"), params.get("vendorUrl"));
+                resp = await signup.continue(modelToSign)
+            }else{
+                // wait for response (model to sign) - ok to not remove event handler because this page will close soon anyways 
+                const waitForSignal = () => {
+                    return new Promise((resolve) => {
+                        const handler = (event) =>{
+                            window.removeEventListener("message", handler);
+                            if(event.origin == new URL(params.get("vendorUrl")).origin) resolve(event.data); // resolve promise when window listener has recieved msg
+                        }
+                        window.addEventListener("message", handler, false);
+                    });
+                }
+                const userData = await signup.start(user, pass, params.get("vendorPublic"), params.get("vendorUrl")); // get jwt for this vendor from sign in flow
+                const pre_model = waitForSignal();
+                window.opener.postMessage(userData, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
+                const model = await pre_model; // model to sign from page calling the enclave
+                
+                resp = await signup.continue(model);
+            }
+            window.opener.postMessage(resp, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
             window.self.close();
         }catch(e){
             $('#alert-su').text(e);

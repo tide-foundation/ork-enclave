@@ -20,7 +20,7 @@
 </head>
 <body>
 	<!--============================ CHECK THIS INTEGRITY HASH ============================================-->
-	<script class="s_links" type="module" src="./dist/main.bundle.js" integrity="sha384-NtYGhpJkMs8zsi1iav/8YrQVU0u/jMUfCd8raX9i2gEyMqzE+WaKqhjgZ65u80z2"></script>
+	<script class="s_links" type="module" src="./js/main.js"></script>
 	<!--===================================================================================================-->
 	<div>
 		<div class="limiter">
@@ -158,7 +158,14 @@
 			function rehome(){
 				let newORKUrl = prompt("Enter new ORK URL:", "https://h4x22ork1.azurewebsites.net/");
 				const params = new URLSearchParams(window.location.search);
-				window.opener.postMessage("*" + newORKUrl, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
+
+				const response = {
+					ok: true,
+					dataType: "newORKUrl",
+					url: newORKUrl
+				}
+
+				window.opener.postMessage(response, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
 				window.close();
 			}
 		</script>

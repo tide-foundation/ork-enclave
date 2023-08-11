@@ -40,7 +40,7 @@
 // 
 
 
-import { BigIntToByteArray, BigIntFromByteArray, bytesToBase64, base64ToBytes } from "../Tools/Utils.js";
+import { BigIntToByteArray, BigIntFromByteArray, bytesToBase64, base64ToBytes, ConcatUint8Arrays } from "../Tools/Utils.js";
 
 const _0n = BigInt(0);
 const _1n = BigInt(1);
@@ -199,6 +199,15 @@ export default class Point {
         const bytes = BigIntToByteArray(this.getY());
         bytes[31] |= this.getX() & _1n ? 0x80 : 0;
         return bytes;
+    }
+
+    getOpenSSHPublicKey(){
+        // these bytes read: 0, 0, 0, 11, "ssh-ed25519", 0, 0, 0, 32
+        const staticBytes = new Uint8Array([0x00, 0x00, 0x00, 0x0b, 0x73, 0x73, 0x68, 0x2d, 0x65, 0x64, 0x32, 0x35, 0x35, 0x31, 0x39, 0x00, 0x00, 0x00, 0x20]);
+        const keyBytes = this.toArray();
+        const combinedBytesB64 = bytesToBase64(ConcatUint8Arrays([staticBytes, keyBytes]));
+
+        return "ssh-ed25519 " + combinedBytesB64
     }
 
     /**

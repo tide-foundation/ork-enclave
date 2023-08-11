@@ -15,24 +15,21 @@
 // If not, see https://tide.org/licenses_tcoc2-0-0-en
 //
 
+import Point from "../Ed25519/point.js"
 
-export { default as Point } from './Ed25519/point.js';
-export { default as PrismFlow } from './Flow/Prism.js';
-export { default as NodeClient } from './Clients/NodeClient.js'
-export { default as SimClient } from './Clients/SimulatorClient.js'
-export { default as SimulatorFlow } from './Flow/Simulator.js';
-export { default as SignUp } from './Functions/SignUp.js';
-export { default as SignIn } from './Functions/SignIn.js';
-export { default as TideJWT } from "./ModelsToSign/TideJWT.js"
-
-import * as Utils from './Tools/Utils.js';
-export { Utils };
-
-import * as AES from './Tools/AES.js';
-export { AES };
-
-import * as Hash from './Tools/Hash.js';
-export { Hash };
-
-import * as EdDSA from './Tools/EdDSA.js'
-export { EdDSA };
+export default class PreSignInResponse{
+    /** 
+     * @param {Point} GR1
+     * @param {Point} GR2
+     */
+    constructor(GR1, GR2){
+        this.GR1 = GR1
+        this.GR2 = GR2
+    }
+    static from(data){
+        const obj = JSON.parse(data);
+        const gR1 = Point.fromB64(obj.GR1)
+        const gR2 = obj.GR2 != null ? Point.fromB64(obj.GR2) : null;
+        return new PreSignInResponse(gR1, gR2);
+    }
+}
