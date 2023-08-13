@@ -30,7 +30,7 @@ export default class dKeyAuthenticationFlow{
          * @type {[string, string, Point][]}  // everything about CMK orks of this user - orkID, orkURL, orkPublic
          */
         this.CMKorks = CMKorks;
-        this.threshold = 2;
+        this.threshold = 3;
     }
 
     /**
