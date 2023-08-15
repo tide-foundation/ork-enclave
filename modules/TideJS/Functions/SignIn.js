@@ -67,81 +67,66 @@ export default class SignIn {
      * @param {string} gVVK The vendor's public key
      */
     async start(username, password, gVVK) {
-        try{
-            const startTime = BigInt(Math.floor(Date.now() / 1000));
-            const r1 = RandomBigInt();
-            const r2 = RandomBigInt();
-            //hash username
-            const uid = Bytes2Hex(await SHA256_Digest(username.toLowerCase()));
+        const startTime = BigInt(Math.floor(Date.now() / 1000));
+        const r1 = RandomBigInt();
+        const r2 = RandomBigInt();
+        //hash username
+        const uid = Bytes2Hex(await SHA256_Digest(username.toLowerCase()));
 
-            // Putting this up here to speed things up using await
-            const simClient = new SimulatorClient(this.simulatorUrl);
-            const pre_orkInfo = simClient.GetUserORKs(uid);
-            const pre_cmkPub = simClient.GetKeyPublic(uid);
+        // Putting this up here to speed things up using await
+        const simClient = new SimulatorClient(this.simulatorUrl);
+        const pre_orkInfo = simClient.GetUserORKs(uid);
+        const pre_cmkPub = simClient.GetKeyPublic(uid);
 
-            const gUser = await HashToPoint(username.toLowerCase() + gVVK);
-            const gBlurUser = gUser.times(r2);
-            //convert password to point
-            const gPass = await HashToPoint(password);
-            const gBlurPass = gPass.times(r1);
+        const gUser = await HashToPoint(username.toLowerCase() + gVVK);
+        const gBlurUser = gUser.times(r2);
+        //convert password to point
+        const gPass = await HashToPoint(password);
+        const gBlurPass = gPass.times(r1);
 
-            // get ork urls
-            const cmkOrkInfo = await pre_orkInfo;
-            const cmkPub = await pre_cmkPub;
+        // get ork urls
+        const cmkOrkInfo = await pre_orkInfo;
+        const cmkPub = await pre_cmkPub;
 
-            const authFlow = new dKeyAuthenticationFlow(cmkOrkInfo);
-            const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK);
+        const authFlow = new dKeyAuthenticationFlow(cmkOrkInfo);
+        const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK);
 
-            const cvkPub = await simClient.GetKeyPublic(convertData.VUID);
+        const cvkPub = await simClient.GetKeyPublic(convertData.VUID);
 
-            this.authFlow = authFlow
-            this.convertData = convertData
-            this.uid = uid
+        this.authFlow = authFlow
+        this.convertData = convertData
+        this.uid = uid
 
-            return {
-                ok: true,
-                dataType: "userData",
-                newAccount: false, // line will change when CVKs are sometimes created here
-                publicKey: cvkPub.toBase64(),
-                uid: convertData.VUID
-            };
-        }catch(e){
-            return {
-                ok: false,
-                message: e
-            }
-        }
-        
+        return {
+            ok: true,
+            dataType: "userData",
+            newAccount: false, // line will change when CVKs are sometimes created here
+            publicKey: cvkPub.toBase64(),
+            uid: convertData.VUID
+        };
     }
 
     // User can optionally add a modelToSign into the SignIn process now
     async continue(modelToSign_p=null){
-        try{
-            if(this.convertData == undefined || this.uid == undefined || this.authFlow == undefined) throw Error("Values must be defined before hand")
-            if(modelToSign_p == null && this.modelToSign == null) this.mode = "default"; // revert mode to default if no model to sign provided
+        if(this.convertData == undefined || this.uid == undefined || this.authFlow == undefined) throw Error("Values must be defined before hand")
+        if(modelToSign_p == null && this.modelToSign == null) this.mode = "default"; // revert mode to default if no model to sign provided
 
-            const modelRequested = (this.modelToSign == null && modelToSign_p == null) ? false : true;
-            const modelToSign = this.modelToSign == null ? modelToSign_p : this.modelToSign; // figure out which one is the not null, if both are null, it will still be null
+        const modelRequested = (this.modelToSign == null && modelToSign_p == null) ? false : true;
+        const modelToSign = this.modelToSign == null ? modelToSign_p : this.modelToSign; // figure out which one is the not null, if both are null, it will still be null
 
-            const simClient = new SimulatorClient(this.simulatorUrl);
+        const simClient = new SimulatorClient(this.simulatorUrl);
 
-            const vOrks = await simClient.GetUserORKs(this.convertData.VUID);
-            this.authFlow.CVKorks = vOrks;
-            const authData = await this.authFlow.Authenticate_and_PreSignInCVK(this.uid, this.convertData.VUID, this.convertData.decChallengei, this.convertData.encAuthRequests, this.convertData.gSessKeyPub, this.convertData.data_for_PreSignInCVK, modelRequested);
+        const vOrks = await simClient.GetUserORKs(this.convertData.VUID);
+        this.authFlow.CVKorks = vOrks;
+        const authData = await this.authFlow.Authenticate_and_PreSignInCVK(this.uid, this.convertData.VUID, this.convertData.decChallengei, this.convertData.encAuthRequests, this.convertData.gSessKeyPub, this.convertData.data_for_PreSignInCVK, modelRequested);
 
-            const {jwt, modelSig} = await this.authFlow.SignInCVK(this.convertData.VUID, this.convertData.jwt, authData.vlis, this.convertData.timestamp2, this.convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, this.mode, modelToSign, authData.model_gR);
-            
-            return {
-                ok: true,
-                dataType: "completed",
-                TideJWT: jwt, 
-                modelSig: modelSig
-            };
-        }catch(e){
-            return {
-                ok: false,
-                message: e
-            }
-        }
+        const {jwt, modelSig} = await this.authFlow.SignInCVK(this.convertData.VUID, this.convertData.jwt, authData.vlis, this.convertData.timestamp2, this.convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, this.mode, modelToSign, authData.model_gR);
+        
+        return {
+            ok: true,
+            dataType: "completed",
+            TideJWT: jwt, 
+            modelSig: modelSig
+        };
     }
 }

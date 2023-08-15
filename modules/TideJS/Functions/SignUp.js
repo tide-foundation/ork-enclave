@@ -78,99 +78,83 @@ export default class SignUp {
      * @param {string} vendorUrl
      */
     async start(username, password, gVVK, vendorUrl) { // should we implement a vendor object where the VVK signs the vendorUrl + homeOrk url?
-        try{
-            //hash username
-            const uid = Bytes2Hex(await SHA256_Digest(username.toLowerCase()));
+        //hash username
+        const uid = Bytes2Hex(await SHA256_Digest(username.toLowerCase()));
 
-            const r1 = RandomBigInt();
-            const r2 = RandomBigInt();
+        const r1 = RandomBigInt();
+        const r2 = RandomBigInt();
 
-            const gUser = await HashToPoint(username.toLowerCase() + gVVK);
-            const gBlurUser = gUser.times(r1);
-            //convert password to point
-            const gPass = await HashToPoint(password);
-            const gBlurPass = gPass.times(r2);
+        const gUser = await HashToPoint(username.toLowerCase() + gVVK);
+        const gBlurUser = gUser.times(r1);
+        //convert password to point
+        const gPass = await HashToPoint(password);
+        const gBlurPass = gPass.times(r2);
 
-            // Start Key Generation Flow
-            const cmkGenFlow = new dKeyGenerationFlow(this.cmkOrkInfo);
-            const cmkGenShardData = await cmkGenFlow.GenShard(uid, 2, [gBlurUser, gBlurPass]);  // GenShard
+        // Start Key Generation Flow
+        const cmkGenFlow = new dKeyGenerationFlow(this.cmkOrkInfo);
+        const cmkGenShardData = await cmkGenFlow.GenShard(uid, 2, [gBlurUser, gBlurPass]);  // GenShard
 
-            const {gPRISMAuth, VUID, gCMKAuth} = await this.getKeyPoints(cmkGenShardData.gMultiplied, [r1, r2], cmkGenShardData.gK1);
+        const {gPRISMAuth, VUID, gCMKAuth} = await this.getKeyPoints(cmkGenShardData.gMultiplied, [r1, r2], cmkGenShardData.gK1);
 
-            const pre_cmkSendShardData = cmkGenFlow.SendShard(uid, cmkGenShardData.sortedShares, cmkGenShardData.R2, cmkGenShardData.timestamp, gPRISMAuth, "CMK", cmkGenShardData.gK1);  // async SendShard
+        const pre_cmkSendShardData = cmkGenFlow.SendShard(uid, cmkGenShardData.sortedShares, cmkGenShardData.R2, cmkGenShardData.timestamp, gPRISMAuth, "CMK", cmkGenShardData.gK1);  // async SendShard
 
-            const cvkGenFlow = new dKeyGenerationFlow(this.cvkOrkInfo);
-            const cvkGenShardData = await cvkGenFlow.GenShard(VUID, 1, []);
-            const cvkSendShardData = await cvkGenFlow.SendShard(VUID, cvkGenShardData.sortedShares, cvkGenShardData.R2, cvkGenShardData.timestamp, gCMKAuth, "CVK", cvkGenShardData.gK1);
+        const cvkGenFlow = new dKeyGenerationFlow(this.cvkOrkInfo);
+        const cvkGenShardData = await cvkGenFlow.GenShard(VUID, 1, []);
+        const cvkSendShardData = await cvkGenFlow.SendShard(VUID, cvkGenShardData.sortedShares, cvkGenShardData.R2, cvkGenShardData.timestamp, gCMKAuth, "CVK", cvkGenShardData.gK1);
 
-            const cmkSendShardData = await pre_cmkSendShardData;
+        const cmkSendShardData = await pre_cmkSendShardData;
 
-            this.savedState = {
-                uid: uid,
-                VUID: VUID,
-                gUser: gUser,
-                gPass: gPass,
-                gVVK: gVVK,
-                cmkPub: cmkGenShardData.gK1,
-                cvkPub: cvkGenShardData.gK1,
-                vendorUrl: vendorUrl,
-                cmkSig: cmkSendShardData.S,
-                cvkSig: cvkSendShardData.S,
-                cmkFlow: cmkGenFlow,
-                cvkFlow: cvkGenFlow
-            }
-
-            // end here
-            return {
-                ok: true,
-                dataType: "userData",
-                newAccount: true, // needed for when sign in ALSO creates CVKs
-                publicKey: cvkGenShardData.gK1.toBase64(),
-                uid: VUID
-            };
-        }catch(e){
-            return {
-                ok: false,
-                message: e
-            }
+        this.savedState = {
+            uid: uid,
+            VUID: VUID,
+            gUser: gUser,
+            gPass: gPass,
+            gVVK: gVVK,
+            cmkPub: cmkGenShardData.gK1,
+            cvkPub: cvkGenShardData.gK1,
+            vendorUrl: vendorUrl,
+            cmkSig: cmkSendShardData.S,
+            cvkSig: cvkSendShardData.S,
+            cmkFlow: cmkGenFlow,
+            cvkFlow: cvkGenFlow
         }
-        
+
+        // end here
+        return {
+            ok: true,
+            dataType: "userData",
+            newAccount: true, // needed for when sign in ALSO creates CVKs
+            publicKey: cvkGenShardData.gK1.toBase64(),
+            uid: VUID
+        };
     }
 
     async continue(modelToSign=null){
-        try{
-            if(this.savedState == undefined) throw Error("Saved state not defined");
-            if(modelToSign == null && this.modelToSign == null) this.mode = "default"; // revert mode to default if no model to sign provided
+        if(this.savedState == undefined) throw Error("Saved state not defined");
+        if(modelToSign == null && this.modelToSign == null) this.mode = "default"; // revert mode to default if no model to sign provided
 
-            // Test sign in
-            const {jwt, modelSig} = await this.testSignIn(this.savedState.uid, this.savedState.gUser, this.savedState.gPass, this.savedState.gVVK, this.savedState.cmkPub, this.savedState.cvkPub, modelToSign);
+        // Test sign in
+        const {jwt, modelSig} = await this.testSignIn(this.savedState.uid, this.savedState.gUser, this.savedState.gPass, this.savedState.gVVK, this.savedState.cmkPub, this.savedState.cvkPub, modelToSign);
 
-            // Test dDecrypt
-            if(this.mode == "default"){
-                //       const dDecryptFlow = new dDecryptionTestFlow(this.savedState.vendorUrl, Point.fromB64(this.savedState.gVVK), this.savedState.cvkPub, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
-            //         await dDecryptFlow.startTest();
-            }
-
-            // Commit newly generated keys
-            const pre_cmkCommit = this.savedState.cmkFlow.Commit(this.savedState.uid, this.savedState.cmkSig, "CMK");
-            const pre_cvkCommit = this.savedState.cvkFlow.Commit(this.savedState.VUID, this.savedState.cvkSig, "CVK");
-
-            await pre_cmkCommit;
-            await pre_cvkCommit;
-
-            return {
-                ok: true,
-                dataType: "completed",
-                TideJWT: jwt, 
-                modelSig: modelSig
-            };
-        }catch(e){
-            return {
-                ok: false,
-                message: e
-            }
+        // Test dDecrypt
+        if(this.mode == "default"){
+            //       const dDecryptFlow = new dDecryptionTestFlow(this.savedState.vendorUrl, Point.fromB64(this.savedState.gVVK), this.savedState.cvkPub, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
+        //         await dDecryptFlow.startTest();
         }
-        
+
+        // Commit newly generated keys
+        const pre_cmkCommit = this.savedState.cmkFlow.Commit(this.savedState.uid, this.savedState.cmkSig, "CMK");
+        const pre_cvkCommit = this.savedState.cvkFlow.Commit(this.savedState.VUID, this.savedState.cvkSig, "CVK");
+
+        await pre_cmkCommit;
+        await pre_cvkCommit;
+
+        return {
+            ok: true,
+            dataType: "completed",
+            TideJWT: jwt, 
+            modelSig: modelSig
+        };
     }
 
     /**
