@@ -29,6 +29,12 @@ export default class NodeClient extends ClientBase {
         super(url)
     }
 
+    async isActive(){
+        const response = await this._get("/active");
+        const responseData = await this._handleError(response, "Is Active");
+        return responseData;
+    }
+
     /**
      * @param {Point} gBlurUser
      * @param {Point} gBlurPass
