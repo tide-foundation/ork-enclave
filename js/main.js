@@ -139,6 +139,7 @@ var activeOrks = [];
             var el = document.createElement("option");
             el.textContent = opt[1];
             el.value = opt;
+            if(i < 5) el.selected = "selected" // threshold / n constant here
             select.add(el);                       
         } 
         
@@ -225,8 +226,6 @@ var activeOrks = [];
         const signup = new SignUp(config);
         try{
             if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
-
-            
 
             let resp;
             if(mode == "default" || modelToSign != null){
