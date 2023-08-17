@@ -17,25 +17,26 @@
 
 import Point from "../Ed25519/point.js"
 import ClientBase from "./ClientBase.js"
+import NodeClient from "./NodeClient.js";
 
 // TODO: Remove this client. All API requests for blockchain stuff should go through ORKs
 export default class SimulatorClient extends ClientBase {
     /**
      * @param {string} url
      */
-    constructor(url){
-        super(url)
+    constructor(){
+        super(window.location.origin)
     }
 
     /**
      * This method will query the simulator for all information about all ORKs and return
      * an array compromising of each ORK's name, url and public.
-     * @returns {Promise<[string, string, string, string][]>}
      */
     async GetAllORKs(){
-        const response = await this._get('/orks'); // endpoint is at /
-        const formattedResponse = JSON.parse(await response.text())
-        const returnedResponse = formattedResponse.map(orkEntry => [orkEntry.orkId, orkEntry.orkName, orkEntry.orkUrl, orkEntry.orkPub]);
+        const response = await this._get('/orks');
+        const responseData = await this._handleErrorSimulator(response);
+        const formattedResponse = JSON.parse(responseData)
+        const returnedResponse = formattedResponse.map(orkEntry => new {id: orkEntry.orkId, name: orkEntry.orkName, url: orkEntry.orkUrl, public: orkEntry.orkPub});
         return returnedResponse;
     }
 
@@ -45,7 +46,7 @@ export default class SimulatorClient extends ClientBase {
      * @returns {Promise<[string, string, Point][]>}
      */
     async GetUserORKs(uid){
-        const response = await this._get(`keyentry/orks/${uid}`);
+        const response = await this._get(`/keyentry/orks/${uid}`);
         const responseData = await this._handleErrorSimulator(response);
         const resp_obj = JSON.parse(responseData);
         const pubs = resp_obj.orkPubs.map(pub => Point.fromB64(pub));
@@ -59,22 +60,10 @@ export default class SimulatorClient extends ClientBase {
      * @returns {Promise<Point>}
      */
     async GetKeyPublic(uid){
-        const response = await this._get(`keyentry/${uid}`);
+        const response = await this._get(`/keyentry/${uid}`);
         const responseData = await this._handleErrorSimulator(response);
         const resp_obj = JSON.parse(responseData);
         return Point.fromB64(resp_obj.public);
-    }
-
-     /**
-     * This method will query the simulator for all information about all active ORKs and return
-     * an array compromising of each ORK's name, url and public.
-     * @returns {Promise<[string, string, string, string][]>}
-     */
-    async GetActiveORKs(){
-        const response = await this._get('/orks/active'); 
-        const formattedResponse = JSON.parse(await response.text())
-        const returnedResponse = formattedResponse.map(orkEntry => [orkEntry.orkId, orkEntry.orkName, orkEntry.orkUrl, orkEntry.orkPub]);
-        return returnedResponse;
     }
 
 }
