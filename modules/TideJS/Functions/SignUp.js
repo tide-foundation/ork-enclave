@@ -16,12 +16,9 @@
 //
 
 import Point from "../Ed25519/point.js"
-import PrismFlow from "../Flow/Prism.js"
 import { SHA256_Digest, SHA512_Digest } from "../Tools/Hash.js"
 import { BigIntFromByteArray, BigIntToByteArray, Bytes2Hex, mod, mod_inv, RandomBigInt } from "../Tools/Utils.js"
 import dKeyGenerationFlow from "../Flow/dKeyGenerationFlow.js"
-import { createAESKey, encryptData } from "../Tools/AES.js"
-import SignIn from "./SignIn.js"
 import dKeyAuthenticationFlow from "../Flow/dKeyAuthenticationFlow.js"
 import TideJWT from "../ModelsToSign/TideJWT.js"
 import dDecryptionTestFlow from "../Flow/dDecryptionTestFlow.js"
@@ -138,6 +135,7 @@ export default class SignUp {
 
         // Test dDecrypt
         if(this.mode == "default"){
+            // implement flag for which tests we want to run in new account
             //       const dDecryptFlow = new dDecryptionTestFlow(this.savedState.vendorUrl, Point.fromB64(this.savedState.gVVK), this.savedState.cvkPub, jwt, this.cvkOrkInfo[0][1]); // send first cvk ork's url as cvkOrkUrl, randomise in future?
         //         await dDecryptFlow.startTest();
         }

@@ -23,7 +23,9 @@ import SimulatorClient from "../Clients/SimulatorClient.js"
 import NodeClient from "../Clients/NodeClient.js"
 import { decryptData } from "../Tools/AES.js"
 import dKeyAuthenticationFlow from "../Flow/dKeyAuthenticationFlow.js"
+import dKeyGenerationFlow from "../Flow/dKeyGenerationFlow.js"
 import HashToPoint from "../Tools/H2P.js"
+import TestSignIn from "./TestSignIn.js"
 
 export default class SignIn {
     /**
@@ -55,9 +57,12 @@ export default class SignIn {
          */
         this.simulatorUrl = config.simulatorUrl
 
+        this.savedState = {}
+
         this.authFlow = undefined
         this.convertData = undefined
         this.uid = undefined
+        this.cvkExists = undefined
     }
 
     /**
@@ -91,23 +96,65 @@ export default class SignIn {
         const authFlow = new dKeyAuthenticationFlow(cmkOrkInfo);
         const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK);
 
-        const cvkPub = await simClient.GetKeyPublic(convertData.VUID);
+        let cvkPub = await simClient.GetKeyPublic(convertData.VUID);
 
-        this.authFlow = authFlow
-        this.convertData = convertData
-        this.uid = uid
+        this.cvkExists = (!cvkPub) ? false : true;
+        if(!this.cvkExists) {
+            this.savedState.uid = uid;
+            this.savedState.VUID = convertData.VUID;
+            this.savedState.gVVK = gVVK;
+            this.savedState.gUser = gUser;
+            this.savedState.gPass = gPass;
+            this.savedState.cmkOrkInfo = cmkOrkInfo;
+            this.savedState.cmkPub = cmkPub;
+            return await this.createCVK(convertData.VUID, convertData.data_for_PreSignInCVK.gCMKAuth);
+        }
+
+        this.savedState.authFlow = authFlow;
+        this.savedState.convertData = convertData;
+        this.savedState.uid = uid;
 
         return {
             ok: true,
             dataType: "userData",
-            newAccount: false, // line will change when CVKs are sometimes created here
+            newAccount: false,
             publicKey: cvkPub.toBase64(),
             uid: convertData.VUID
         };
     }
 
-    // User can optionally add a modelToSign into the SignIn process now
     async continue(modelToSign_p=null){
+        if(this.cvkExists == undefined) throw Error("SignIn methods implemented improperly");
+        if(this.cvkExists) return this.continueSignIn(modelToSign_p);
+        else if(this.cvkExists == false) return this.commitCVK(modelToSign_p);
+        else throw Error("Strange error occured")
+    }
+
+    /**
+     * CMK exists for this user but no CVK for this vendor. Let's create one.
+     * @param {string} VUID 
+     * @param {Point} gCMKAuth
+     * @param {[string, string, Point][]} cvkOrkInfo 
+     */
+    async createCVK(VUID, gCMKAuth, cvkOrkInfo){
+        const cvkGenFlow = new dKeyGenerationFlow(cvkOrkInfo);
+        const cvkGenShardData = await cvkGenFlow.GenShard(VUID, 1, []);
+        const cvkSendShardData = await cvkGenFlow.SendShard(VUID, cvkGenShardData.sortedShares, cvkGenShardData.R2, cvkGenShardData.timestamp, gCMKAuth, "CVK", cvkGenShardData.gK1);
+
+        this.savedState.cvkPub = cvkGenShardData.gK1;
+        this.savedState.cvkFlow = cvkGenFlow;
+        this.savedState.cvkSig = cvkSendShardData.S;
+
+        return {
+            ok: true,
+            dataType: "userData",
+            newAccount: true,
+            publicKey: cvkGenShardData.gK1.toBase64(),
+            uid: VUID
+        };
+    }
+
+    async continueSignIn(modelToSign_p=null){
         if(this.convertData == undefined || this.uid == undefined || this.authFlow == undefined) throw Error("Values must be defined before hand")
         if(modelToSign_p == null && this.modelToSign == null) this.mode = "default"; // revert mode to default if no model to sign provided
 
@@ -122,6 +169,25 @@ export default class SignIn {
 
         const {jwt, modelSig} = await this.authFlow.SignInCVK(this.convertData.VUID, this.convertData.jwt, authData.vlis, this.convertData.timestamp2, this.convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, this.mode, modelToSign, authData.model_gR);
         
+        return {
+            ok: true,
+            dataType: "completed",
+            TideJWT: jwt, 
+            modelSig: modelSig
+        };
+    }
+
+    async commitCVK(modelToSign_p=null){
+        if(!this.savedState.VUID) throw Error("No VUID available in saved state"); // use this to determine not only if savedState exists, but also for VUID (from createCVK process)
+
+        const testSignIn = new TestSignIn(this.savedState.cmkOrkInfo, this.savedState.cmkOrkInfo); // send cmkOrkInfo twice as there is no vendor selection of CVK orks yet
+        const {jwt, modelSig} = await testSignIn.start(this.savedState.uid, this.savedState.gUser, this.savedState.gPass, this.savedState.gVVK,
+            this.savedState.cmkPub, this.savedState.cvkPub, modelToSign_p);
+        
+        // test dDecrypt() ?
+
+        await this.savedState.cvkFlow.Commit(this.savedState.VUID, this.savedState.cvkSig, "CVK");
+
         return {
             ok: true,
             dataType: "completed",

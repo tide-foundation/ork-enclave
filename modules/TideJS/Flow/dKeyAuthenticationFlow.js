@@ -87,6 +87,7 @@ export default class dKeyAuthenticationFlow{
      */
     async Authenticate_and_PreSignInCVK(uid, vuid, decryptedChallengei, encryptedAuthRequest, gSessKeyPub, data_for_PreSignInCVK, modelRequested=false, test=false){
         const cmkClients = this.CMKorks.map(ork => new NodeClient(ork[1]))
+        // TODO: Once sim client ceases to exist, fill in this.CVKorks here by quering a cmkork
         const cvkClients = this.CVKorks.map(ork => new NodeClient(ork[1]))
 
         const pre_encSig = cmkClients.map((client, i) => client.Authenticate(uid, decryptedChallengei[i], encryptedAuthRequest[i], test))
