@@ -20,7 +20,7 @@ export { default as Point } from './Ed25519/point.js';
 export { default as PrismFlow } from './Flow/Prism.js';
 export { default as NodeClient } from './Clients/NodeClient.js'
 export { default as SimClient } from './Clients/SimulatorClient.js'
-export { default as SimulatorFlow } from './Flow/Simulator.js';
+export { default as SimulatorFlow } from './Flow/SimulatorFlow.js';
 export { default as SignUp } from './Functions/SignUp.js';
 export { default as SignIn } from './Functions/SignIn.js';
 export { default as TideJWT } from "./ModelsToSign/TideJWT.js"
