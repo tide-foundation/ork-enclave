@@ -207,7 +207,7 @@ var activeOrks = [];
             const myArray = JSON.parse(element);
             cmkOrkInfo.push([myArray.id, myArray.url, Point.fromB64(myArray.public)]);
         });
-        var cvkOrkInfo = activeOrks.sort(() => 0.5 - Math.random()).slice(0, 5).map(a => [a[0], a[2], Point.fromB64(a[3])]);// get first 5 random orks as cvk orks
+        var cvkOrkInfo = activeOrks.sort(() => 0.5 - Math.random()).slice(0, 5).map(a => [a.id, a.url, Point.fromB64(a.public)]);// get first 5 random orks as cvk orks
         
         const params = new URLSearchParams(window.location.search);
         const mode = params.get("mode");
