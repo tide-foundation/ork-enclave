@@ -126,7 +126,7 @@ var activeOrks = [];
 
     async function getAllOrks() {
 
-        const activeOrks = await SimulatorFlow.GetActiveOrks(); 
+        activeOrks = await SimulatorFlow.GetActiveOrks(); 
        
         var select = document.getElementById("ork-drop-down");
         for(var i = 0; i < activeOrks.length; i++) {
