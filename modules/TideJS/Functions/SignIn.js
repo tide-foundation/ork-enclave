@@ -162,7 +162,7 @@ export default class SignIn {
 
         const simClient = new SimulatorClient();
 
-        const vOrks = await simClient.GetUserORKs(this.convertData.VUID);
+        const vOrks = await simClient.GetUserORKs(this.savedState.convertData.VUID);
         this.savedState.authFlow.CVKorks = vOrks;
         const authData = await this.savedState.authFlow.Authenticate_and_PreSignInCVK(this.savedState.uid, this.savedState.convertData.VUID, this.savedState.convertData.decChallengei, 
             this.savedState.convertData.encAuthRequests, this.savedState.convertData.gSessKeyPub, this.savedState.convertData.data_for_PreSignInCVK, modelRequested);
