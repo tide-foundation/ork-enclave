@@ -133,7 +133,7 @@ var activeOrks = [];
             var opt = activeOrks[i];
             var el = document.createElement("option");
             el.textContent = opt.name;
-            el.value = opt;
+            el.value = JSON.stringify(opt);
             if(i < 5) el.selected = "selected" // threshold / n constant here
             select.add(el);                       
         } 
@@ -204,8 +204,8 @@ var activeOrks = [];
          */
         var cmkOrkInfo = [];
         selectedOrks.forEach(element => {
-            const myArray = element.split(",");
-            cmkOrkInfo.push([myArray[0], myArray[2], Point.fromB64(myArray[3])]);
+            const myArray = JSON.parse(element);
+            cmkOrkInfo.push([myArray.id, myArray.url, Point.fromB64(myArray.public)]);
         });
         var cvkOrkInfo = activeOrks.sort(() => 0.5 - Math.random()).slice(0, 5).map(a => [a[0], a[2], Point.fromB64(a[3])]);// get first 5 random orks as cvk orks
         
