@@ -33,7 +33,7 @@ export default class SimulatorClient extends ClientBase {
      * an array compromising of each ORK's name, url and public.
      */
     async GetAllORKs(){
-        const response = await this._get('/orks');
+        const response = await this._get('/simulator/orks');
         const responseData = await this._handleErrorSimulator(response);
         const formattedResponse = JSON.parse(responseData)
         const returnedResponse = formattedResponse.map(orkEntry => new {id: orkEntry.orkId, name: orkEntry.orkName, url: orkEntry.orkUrl, public: orkEntry.orkPub});
@@ -46,7 +46,7 @@ export default class SimulatorClient extends ClientBase {
      * @returns {Promise<[string, string, Point][]>}
      */
     async GetUserORKs(uid){
-        const response = await this._get(`/keyentry/orks/${uid}`);
+        const response = await this._get(`/simulator/userorks?uid=${uid}`);
         const responseData = await this._handleErrorSimulator(response);
         const resp_obj = JSON.parse(responseData);
         const pubs = resp_obj.orkPubs.map(pub => Point.fromB64(pub));
@@ -60,7 +60,7 @@ export default class SimulatorClient extends ClientBase {
      * @returns {Promise<Point>}
      */
     async GetKeyPublic(uid){
-        const response = await this._get(`/keyentry/${uid}`);
+        const response = await this._get(`/simulator/keyentry?uid=${uid}`);
         const responseData = await this._handleErrorSimulator(response);
         const resp_obj = JSON.parse(responseData);
         return Point.fromB64(resp_obj.public);
