@@ -36,7 +36,9 @@ export default class SimulatorClient extends ClientBase {
         const response = await this._get('/simulator/orks');
         const responseData = await this._handleErrorSimulator(response);
         const formattedResponse = JSON.parse(responseData)
-        const returnedResponse = formattedResponse.map(orkEntry => new {id: orkEntry.orkId, name: orkEntry.orkName, url: orkEntry.orkUrl, public: orkEntry.orkPub});
+        const returnedResponse = formattedResponse.map(orkEntry => {
+            return {id: orkEntry.orkId, name: orkEntry.orkName, url: orkEntry.orkUrl, public: orkEntry.orkPub};
+        });
         return returnedResponse;
     }
 

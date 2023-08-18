@@ -132,7 +132,7 @@ var activeOrks = [];
         for(var i = 0; i < activeOrks.length; i++) {
             var opt = activeOrks[i];
             var el = document.createElement("option");
-            el.textContent = opt[1];
+            el.textContent = opt.name;
             el.value = opt;
             if(i < 5) el.selected = "selected" // threshold / n constant here
             select.add(el);                       
