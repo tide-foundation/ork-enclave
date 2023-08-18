@@ -78,7 +78,7 @@ export default class SignIn {
         const uid = Bytes2Hex(await SHA256_Digest(username.toLowerCase()));
 
         // Putting this up here to speed things up using await
-        const simClient = new SimulatorClient(this.simulatorUrl);
+        const simClient = new SimulatorClient();
         const pre_orkInfo = simClient.GetUserORKs(uid);
         const pre_cmkPub = simClient.GetKeyPublic(uid);
 
@@ -154,19 +154,22 @@ export default class SignIn {
     }
 
     async continueSignIn(modelToSign_p=null){
-        if(this.convertData == undefined || this.uid == undefined || this.authFlow == undefined) throw Error("Values must be defined before hand")
+        if(!this.savedState.authFlow || !this.savedState.convertData) throw Error("No authflow/convertData available in saved state"); // use this to determine not only if savedState exists, but also for VUID (from createCVK process)
         if(modelToSign_p == null && this.modelToSign == null) this.mode = "default"; // revert mode to default if no model to sign provided
 
         const modelRequested = (this.modelToSign == null && modelToSign_p == null) ? false : true;
         const modelToSign = this.modelToSign == null ? modelToSign_p : this.modelToSign; // figure out which one is the not null, if both are null, it will still be null
 
-        const simClient = new SimulatorClient(this.simulatorUrl);
+        const simClient = new SimulatorClient();
 
         const vOrks = await simClient.GetUserORKs(this.convertData.VUID);
-        this.authFlow.CVKorks = vOrks;
-        const authData = await this.authFlow.Authenticate_and_PreSignInCVK(this.uid, this.convertData.VUID, this.convertData.decChallengei, this.convertData.encAuthRequests, this.convertData.gSessKeyPub, this.convertData.data_for_PreSignInCVK, modelRequested);
+        this.savedState.authFlow.CVKorks = vOrks;
+        const authData = await this.savedState.authFlow.Authenticate_and_PreSignInCVK(this.savedState.uid, this.savedState.convertData.VUID, this.savedState.convertData.decChallengei, 
+            this.savedState.convertData.encAuthRequests, this.savedState.convertData.gSessKeyPub, this.savedState.convertData.data_for_PreSignInCVK, modelRequested);
 
-        const {jwt, modelSig} = await this.authFlow.SignInCVK(this.convertData.VUID, this.convertData.jwt, authData.vlis, this.convertData.timestamp2, this.convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, this.mode, modelToSign, authData.model_gR);
+        const {jwt, modelSig} = await this.savedState.authFlow.SignInCVK(this.savedState.convertData.VUID, this.savedState.convertData.jwt, 
+            authData.vlis, this.savedState.convertData.timestamp2, this.savedState.convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, 
+            authData.gBlindH, this.mode, modelToSign, authData.model_gR);
         
         return {
             ok: true,
