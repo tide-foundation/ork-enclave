@@ -16,7 +16,6 @@
 //
 
 import Point from "../Ed25519/point.js"
-import PrismFlow from "../Flow/Prism.js"
 import { SHA256_Digest } from "../Tools/Hash.js"
 import { BigIntToByteArray, Bytes2Hex, RandomBigInt, bytesToBase64, getCSharpTime } from "../Tools/Utils.js"
 import SimulatorClient from "../Clients/SimulatorClient.js"
