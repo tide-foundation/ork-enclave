@@ -126,12 +126,7 @@ var activeOrks = [];
 
     async function getAllOrks() {
 
-        var config = {
-            urls: ["https://prod-simulator.azurewebsites.net"],
-        }
-        const flow = new SimulatorFlow(config);
-
-        activeOrks = await flow.getActiveOrks(); 
+        const activeOrks = await SimulatorFlow.GetActiveOrks(); 
        
         var select = document.getElementById("ork-drop-down");
         for(var i = 0; i < activeOrks.length; i++) {
