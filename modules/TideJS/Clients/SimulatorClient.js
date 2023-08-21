@@ -48,7 +48,7 @@ export default class SimulatorClient extends ClientBase {
      * @returns {Promise<[string, string, Point][]>}
      */
     async GetUserORKs(uid){
-        const response = await this._get(`/simulator/userorks?uid=${uid}`);
+        const response = await this._get(`/simulator/userorks/${uid}`);
         const responseData = await this._handleErrorSimulator(response);
         const resp_obj = JSON.parse(responseData);
         const pubs = resp_obj.orkPubs.map(pub => Point.fromB64(pub));
@@ -62,7 +62,7 @@ export default class SimulatorClient extends ClientBase {
      * @returns {Promise<Point>}
      */
     async GetKeyPublic(uid){
-        const response = await this._get(`/simulator/keyentry?uid=${uid}`);
+        const response = await this._get(`/simulator/keyentry/${uid}`);
         const responseData = await this._handleErrorSimulator(response);
         const resp_obj = JSON.parse(responseData);
         return Point.fromB64(resp_obj.public);
