@@ -49,7 +49,13 @@ export default class SimulatorClient extends ClientBase {
      */
     async GetUserORKs(uid){
         const response = await this._get(`/simulator/userorks/${uid}`);
-        const responseData = await this._handleError(response, "Get User Orks");
+        let responseData;
+        try{
+            responseData = await this._handleError(response, "Get User Orks");
+        }catch{
+            throw Error("User does not exist");
+        }
+        
         const resp_obj = JSON.parse(responseData);
         const pubs = resp_obj.orkPubs.map(pub => Point.fromB64(pub));
         const returnData = pubs.map((pub, i) => [resp_obj.orkIds[i], resp_obj.orkUrls[i], pub]);  // format data so instead of ( [urls], [points] ) we have (url1, point1), (url2, point2) []
@@ -63,7 +69,12 @@ export default class SimulatorClient extends ClientBase {
      */
     async GetKeyPublic(uid){
         const response = await this._get(`/simulator/keyentry/${uid}`);
-        const responseData = await this._handleError(response, "Get Key Public");
+        let responseData;
+        try{
+            responseData = await this._handleError(response, "Get Key Public");
+        }catch{
+            throw Error("User does not exist");
+        }
         const resp_obj = JSON.parse(responseData);
         return Point.fromB64(resp_obj.public);
     }

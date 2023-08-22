@@ -109,7 +109,12 @@ export async function CmkConvertReply(id, convertResponses, lis, prismAuthis, gC
  * @param {Point[]} vgORKi
  */
 export async function PreSignInCVKReply(encSig, encGRData, data_for_PreSignInCVK, vgORKi){
-    const pre_authResp = encSig.map(async (enc, i) => AuthenticateResponse.from(await AES.decryptData(enc, data_for_PreSignInCVK.prismAuthis[i])));
+    let pre_authResp;
+    try{
+        pre_authResp = encSig.map(async (enc, i) => AuthenticateResponse.from(await AES.decryptData(enc, data_for_PreSignInCVK.prismAuthis[i])));
+    }catch{
+        throw Error("Wrong password");
+    } 
     const authResp = await Promise.all(pre_authResp);
 
     const mod_inv_r4 = mod_inv(data_for_PreSignInCVK.r4);
