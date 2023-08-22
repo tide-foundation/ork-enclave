@@ -164,6 +164,7 @@
 	
 			function rehome(){
 				let newORKUrl = prompt("Enter new ORK URL:", "https://prod-ork3.azurewebsites.net");
+				if(newORKUrl == null) return; // in case user cancels
 				const params = new URLSearchParams(window.location.search);
 
 				const response = {
