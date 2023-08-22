@@ -61,13 +61,13 @@ export async function PrismConvertReply(convertResponses, lis, mgORKi, r1, start
  * @param {string} gVVK
  */
 export async function CmkConvertReply(id, convertResponses, lis, prismAuthis, gCMK, r2, deltaTime, gVVK){
-    let pre_decData;
+    let decData;
     try{
-        pre_decData = convertResponses.map(async (resp, i) => EncryptedConvertResponse.from(await AES.decryptData(resp.EncryptedData, prismAuthis[i])));
+        const pre_decData = convertResponses.map(async (resp, i) => EncryptedConvertResponse.from(await AES.decryptData(resp.EncryptedData, prismAuthis[i])));
+        decData = await Promise.all(pre_decData);
     }catch{
         throw Error("Wrong password");
-    } 
-    const decData = await Promise.all(pre_decData);
+    }
 
     const gUserCMK = decData.reduce((sum, next, i) => sum.add(next.GBlurUserCMKi.times(lis[i])), Point.infinity).times(mod_inv(r2));
     const gUserCMK_Hash = await SHA512_Digest(gUserCMK.toArray());
