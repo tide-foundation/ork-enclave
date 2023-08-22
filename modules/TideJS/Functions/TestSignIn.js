@@ -1,4 +1,5 @@
 import TideJWT from "../ModelsToSign/TideJWT.js";
+import { RandomBigInt } from "../Tools/Utils.js";
 import dKeyAuthenticationFlow from "../Flow/dKeyAuthenticationFlow.js";
 import Point from "../Ed25519/point.js";
 
