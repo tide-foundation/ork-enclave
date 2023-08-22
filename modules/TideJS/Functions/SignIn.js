@@ -112,7 +112,7 @@ export default class SignIn {
             this.savedState.gPass = gPass;
             this.savedState.cmkOrkInfo = cmkOrkInfo;
             this.savedState.cmkPub = cmkPub;
-            return await this.createCVK(convertData.VUID, convertData.data_for_PreSignInCVK.gCMKAuth);
+            return await this.createCVK(convertData.VUID, convertData.data_for_PreSignInCVK.gCMKAuth, cmkOrkInfo); // cvk orks are the same as cmk orks for now HERE
         }
 
         this.savedState.authFlow = authFlow;
