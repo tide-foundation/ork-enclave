@@ -24,14 +24,18 @@ import ConvertResponse from "../Models/ConvertResponse.js";
 export default class dKeyAuthenticationFlow{
     /**
      * @param {[string, string, Point][]} CMKorks 
+     * @param {boolean} cmkCommitted
+     * @param {boolean} cvkCommitted
      */
-    constructor(CMKorks) {
+    constructor(CMKorks, cmkCommitted, cvkCommitted) {
         /**
          * @type {[string, string, Point][]}  // everything about CMK orks of this user - orkID, orkURL, orkPublic
          */
         this.CMKorks = CMKorks;
         this.threshold = 3;
-    }
+        this.cmkTest = !cmkCommitted
+        this.cvkTest = !cvkCommitted
+}
 
     /**
      * 
@@ -43,13 +47,12 @@ export default class dKeyAuthenticationFlow{
      * @param {bigint} startTime
      * @param {Point} gCMK
      * @param {string} gVVK
-     * @param {boolean} test
      */
-    async Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, gCMK, gVVK, test=false){
+    async Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, gCMK, gVVK){
         const clients = this.CMKorks.map(ork => new NodeClient(ork[1])) // create node clients
 
         // Here we also find out which ORKs are up
-        const pre_ConvertResponses = clients.map(client => client.Convert(uid, gBlurUser, gBlurPass, test));
+        const pre_ConvertResponses = clients.map(client => client.Convert(uid, gBlurUser, gBlurPass, this.cmkTest));
         const settledPromises = await Promise.allSettled(pre_ConvertResponses);// determine which promises were fulfilled
         var activeOrks = []
         settledPromises.forEach((promise, i) => {
@@ -83,14 +86,13 @@ export default class dKeyAuthenticationFlow{
      * @param {Point} gSessKeyPub
      * @param {object} data_for_PreSignInCVK
      * @param {boolean} modelRequested
-     * @param {boolean} test
      */
-    async Authenticate_and_PreSignInCVK(uid, vuid, decryptedChallengei, encryptedAuthRequest, gSessKeyPub, data_for_PreSignInCVK, modelRequested=false, test=false){
+    async Authenticate_and_PreSignInCVK(uid, vuid, decryptedChallengei, encryptedAuthRequest, gSessKeyPub, data_for_PreSignInCVK, modelRequested=false){
         const cmkClients = this.CMKorks.map(ork => new NodeClient(ork[1]))
         // TODO: Once sim client ceases to exist, fill in this.CVKorks here by quering a cmkork
         const cvkClients = this.CVKorks.map(ork => new NodeClient(ork[1]))
 
-        const pre_encSig = cmkClients.map((client, i) => client.Authenticate(uid, decryptedChallengei[i], encryptedAuthRequest[i], test))
+        const pre_encSig = cmkClients.map((client, i) => client.Authenticate(uid, decryptedChallengei[i], encryptedAuthRequest[i], this.cmkTest))
         const pre_encGRData = cvkClients.map(client => client.PreSignInCVK(vuid, gSessKeyPub, modelRequested));
 
         const encSig = await Promise.all(pre_encSig);
@@ -136,12 +138,11 @@ export default class dKeyAuthenticationFlow{
      * @param {string} mode
      * @param {string} modelToSign
      * @param {Point} gR2
-     * @param {boolean} test
      */
-    async SignInCVK(vuid, jwt, vlis, timestamp2, gRMul, gCVKR, S, ECDHi, gBlindH, mode="default", modelToSign=null, gR2=null, test=false){
+    async SignInCVK(vuid, jwt, vlis, timestamp2, gRMul, gCVKR, S, ECDHi, gBlindH, mode="default", modelToSign=null, gR2=null){
         const cvkClients = this.CVKorks.map(ork => new NodeClient(ork[1]))
 
-        const pre_encSigs = cvkClients.map((client, i) => client.SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, vlis[i], gBlindH, mode, modelToSign, gR2, test));
+        const pre_encSigs = cvkClients.map((client, i) => client.SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, vlis[i], gBlindH, mode, modelToSign, gR2, this.cvkTest));
         const encSigs = await Promise.all(pre_encSigs);
 
         return await SignInCVKReply(encSigs, gCVKR, gR2, jwt, ECDHi, vlis);
