@@ -95,10 +95,16 @@ export default class SignIn {
         const authFlow = new dKeyAuthenticationFlow(cmkOrkInfo);
         const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK);
 
-        let cvkPub = await simClient.GetKeyPublic(convertData.VUID);
+        let cvkPub;
+        try{
+            cvkPub = await simClient.GetKeyPublic(convertData.VUID);
+            this.cvkExists = true;
+        }catch{
+            // key for VUID was not found
+            this.cvkExists = false;
+        }
 
-        this.cvkExists = (!cvkPub) ? false : true;
-        if(!this.cvkExists) {
+        if(this.cvkExists ==  false) {
             this.savedState.uid = uid;
             this.savedState.VUID = convertData.VUID;
             this.savedState.gVVK = gVVK;
