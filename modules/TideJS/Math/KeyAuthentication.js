@@ -61,7 +61,12 @@ export async function PrismConvertReply(convertResponses, lis, mgORKi, r1, start
  * @param {string} gVVK
  */
 export async function CmkConvertReply(id, convertResponses, lis, prismAuthis, gCMK, r2, deltaTime, gVVK){
-    const pre_decData = convertResponses.map(async (resp, i) => EncryptedConvertResponse.from(await AES.decryptData(resp.EncryptedData, prismAuthis[i])));
+    let pre_decData;
+    try{
+        pre_decData = convertResponses.map(async (resp, i) => EncryptedConvertResponse.from(await AES.decryptData(resp.EncryptedData, prismAuthis[i])));
+    }catch{
+        throw Error("Wrong password");
+    } 
     const decData = await Promise.all(pre_decData);
 
     const gUserCMK = decData.reduce((sum, next, i) => sum.add(next.GBlurUserCMKi.times(lis[i])), Point.infinity).times(mod_inv(r2));
@@ -109,12 +114,7 @@ export async function CmkConvertReply(id, convertResponses, lis, prismAuthis, gC
  * @param {Point[]} vgORKi
  */
 export async function PreSignInCVKReply(encSig, encGRData, data_for_PreSignInCVK, vgORKi){
-    let pre_authResp;
-    try{
-        pre_authResp = encSig.map(async (enc, i) => AuthenticateResponse.from(await AES.decryptData(enc, data_for_PreSignInCVK.prismAuthis[i])));
-    }catch{
-        throw Error("Wrong password");
-    } 
+    const pre_authResp = encSig.map(async (enc, i) => AuthenticateResponse.from(await AES.decryptData(enc, data_for_PreSignInCVK.prismAuthis[i])));
     const authResp = await Promise.all(pre_authResp);
 
     const mod_inv_r4 = mod_inv(data_for_PreSignInCVK.r4);
