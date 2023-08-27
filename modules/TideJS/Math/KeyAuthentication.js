@@ -30,9 +30,10 @@ import { mod } from "../Tools/Utils.js";
 import { mod_inv } from "../Tools/Utils.js";
 import { AES, Utils } from "../index.js";
 import { GetLi } from "./SecretShare.js";
+import PrismConvertResponse from "../Models/PrismConvertResponse.js"
 
 /**
- * @param {ConvertResponse[]} convertResponses 
+ * @param {ConvertResponse[] | PrismConvertResponse[]} convertResponses 
  * @param {Point[]} mgORKi 
  * @param {bigint[]} lis 
  * @param {bigint} r1 
