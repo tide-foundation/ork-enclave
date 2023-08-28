@@ -20,6 +20,7 @@ import GenShardResponse from "../Models/GenShardResponse.js";
 import ClientBase from "./ClientBase.js"
 import SendShardResponse from "../Models/SendShardResponse.js";
 import ConvertResponse from "../Models/ConvertResponse.js";
+import PrismConvertResponse from "../Models/PrismConvertResponse.js"
 
 export default class NodeClient extends ClientBase {
     /**
@@ -33,6 +34,23 @@ export default class NodeClient extends ClientBase {
         const response = await this._get("/active");
         const responseData = await this._handleError(response, "Is Active");
         return responseData;
+    }
+
+    /**
+     * @param {Point} gBlurPass
+     * @param {string} uid 
+     * @param {boolean} test
+     * @returns {Promise<PrismConvertResponse>}
+     */
+    async PrismConvert(uid, gBlurPass, test=false) {
+        const data = this._createFormData({ 
+            'gBlurUser': gBlurUser.toBase64(), 
+            'gBlurPass': gBlurPass.toBase64(),
+            'test': test
+        })
+        const response = await this._post(`/Prism/Convert?uid=${uid}`, data)
+        const responseData = await this._handleError(response, "Convert Prism");
+        return PrismConvertResponse.from(responseData);
     }
 
     /**
@@ -129,14 +147,16 @@ export default class NodeClient extends ClientBase {
      * @param {bigint[]} mIdORKij
      * @param {number} numKeys
      * @param {Point[]} gMultipliers
+     * @param {boolean} existingUser
      * @returns {Promise<GenShardResponse>}
      */
-    async GenShard(uid, mIdORKij, numKeys, gMultipliers) {
+    async GenShard(uid, mIdORKij, numKeys, gMultipliers, existingUser=false) {
         const data = this._createFormData(
             {
                 'mIdORKij': mIdORKij.map(n => n.toString()),
                 'numKeys': numKeys,
                 'gMultipliers': gMultipliers.map(p => p == null ? "" : p.toBase64()),
+                'existingUser': existingUser
             }
         );
         const response = await this._post(`/Create/GenShard?uid=${uid}`, data);
