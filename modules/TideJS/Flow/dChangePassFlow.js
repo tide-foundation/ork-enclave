@@ -4,6 +4,8 @@ import Point from "../Ed25519/point.js";
 import PrismConvertResponse from "../Models/PrismConvertResponse.js"
 import { PrismConvertReply } from "../Math/KeyAuthentication.js";
 import dKeyGenerationFlow from "./dKeyGenerationFlow.js";
+import { mod_inv, BigIntFromByteArray } from "../Tools/Utils.js";
+import { SHA256_Digest } from "../Tools/Hash.js";
 
 export default class dChangePassFlow{
     /**
@@ -12,6 +14,7 @@ export default class dChangePassFlow{
      */
     constructor(cmkOrkInfo){
         this.cmkOrkInfo = cmkOrkInfo;
+        this.cvkOrkInfo = undefined;
     }
     async GetPrism(uid, gBlurPass, r1, startTime){
         const clients = this.cmkOrkInfo.map(ork => new NodeClient(ork[1])) // create node clients
@@ -40,17 +43,19 @@ export default class dChangePassFlow{
         
         return await PrismConvertReply(PrismConvertResponses, lis, this.cmkOrkInfo.map(c => c[2]), r1, startTime);
     }
-    async ChangePrism(uid, gBlurNewPass){
+    async ChangePrism(uid, gBlurNewPass, r1){
         const prismGenFlow = new dKeyGenerationFlow(this.cmkOrkInfo);
         const prismGenShardData = await prismGenFlow.GenShard(uid, 1, [gBlurNewPass]);  // GenShard
 
-        const gPassPRISM = prismGenShardData.gMultiplied[0].times(mod_inv(r[1]));
-        const gPRISMAuth = Point.g.times(BigIntFromByteArray(await SHA256_Digest(gPassPRISM.toArray())));
+        const gNewPassPRISM = prismGenShardData.gMultiplied[0].times(mod_inv(r1));
+        const gNewPRISMAuth = Point.g.times(BigIntFromByteArray(await SHA256_Digest(gNewPassPRISM.toArray())));
 
-        const prismSendShardData = await prismGenFlow.SendShard(uid, prismGenShardData.sortedShares, prismGenShardData.R2, prismGenShardData.timestamp, gPRISMAuth, "Prism", prismGenShardData.gK1);  // async SendShard
+        const prismSendShardData = await prismGenFlow.SendShard(uid, prismGenShardData.sortedShares, prismGenShardData.R2, prismGenShardData.timestamp, gNewPRISMAuth, "Prism", prismGenShardData.gK1);  // async SendShard
+        return prismSendShardData;
     }
     async Test(){
-
+        const testSignIn = new TestSignIn(this.cmkOrkInfo, this.cvkOrkInfo, true);
+        
     }
     async CommitPrism(){
 

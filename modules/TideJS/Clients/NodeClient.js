@@ -43,8 +43,7 @@ export default class NodeClient extends ClientBase {
      * @returns {Promise<PrismConvertResponse>}
      */
     async PrismConvert(uid, gBlurPass, test=false) {
-        const data = this._createFormData({ 
-            'gBlurUser': gBlurUser.toBase64(), 
+        const data = this._createFormData({  
             'gBlurPass': gBlurPass.toBase64(),
             'test': test
         })
