@@ -19,7 +19,7 @@ import NodeClient from "../Clients/NodeClient.js";
 import Point from "../Ed25519/point.js";
 import { CmkConvertReply, PreSignInCVKReply, PrismConvertReply, SignInCVKReply } from "../Math/KeyAuthentication.js";
 import { GetLi } from "../Math/SecretShare.js";
-import ConvertResponse from "../Models/ConvertResponse.js";
+import ConvertResponse from "../Models/CMKConvertResponse.js";
 
 export default class dKeyAuthenticationFlow{
     /**
@@ -27,7 +27,7 @@ export default class dKeyAuthenticationFlow{
      * @param {boolean} cmkCommitted
      * @param {boolean} cvkCommitted
      */
-    constructor(CMKorks, cmkCommitted, cvkCommitted) {
+    constructor(CMKorks, cmkCommitted, cvkCommitted, prismCommitted) {
         /**
          * @type {[string, string, Point][]}  // everything about CMK orks of this user - orkID, orkURL, orkPublic
          */
@@ -35,6 +35,7 @@ export default class dKeyAuthenticationFlow{
         this.threshold = 3;
         this.cmkTest = !cmkCommitted
         this.cvkTest = !cvkCommitted
+        this.prismTest = !prismCommitted
 }
 
     /**

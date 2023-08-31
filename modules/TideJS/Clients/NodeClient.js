@@ -19,7 +19,7 @@ import Point from "../Ed25519/point.js"
 import GenShardResponse from "../Models/GenShardResponse.js";
 import ClientBase from "./ClientBase.js"
 import SendShardResponse from "../Models/SendShardResponse.js";
-import ConvertResponse from "../Models/ConvertResponse.js";
+import ConvertResponse from "../Models/CMKConvertResponse.js";
 import PrismConvertResponse from "../Models/PrismConvertResponse.js"
 
 export default class NodeClient extends ClientBase {
@@ -39,13 +39,13 @@ export default class NodeClient extends ClientBase {
     /**
      * @param {Point} gBlurPass
      * @param {string} uid 
-     * @param {boolean} test
+     * @param {boolean} prismCommitted
      * @returns {Promise<PrismConvertResponse>}
      */
-    async PrismConvert(uid, gBlurPass, test=false) {
+    async PrismConvert(uid, gBlurPass, prismCommitted=false) {
         const data = this._createFormData({  
             'gBlurPass': gBlurPass.toBase64(),
-            'test': test
+            'prismCommitted': prismCommitted
         })
         const response = await this._post(`/Prism/Convert?uid=${uid}`, data)
         const responseData = await this._handleError(response, "Convert Prism");

@@ -17,21 +17,18 @@
 
 import Point from "../Ed25519/point.js";
 
-export default class ConvertResponse{
+export default class CMKConvertResponse{
     /** 
      * @param {string} EncryptedData
      * @param {Point} GBlurPassPRISMi
-     * @param {bigint} Timestampi 
      */
-    constructor(EncryptedData, GBlurPassPRISMi, Timestampi){
+    constructor(EncryptedData, GBlurPassPRISMi){
         this.EncryptedData = EncryptedData
         this.GBlurPassPRISMi = GBlurPassPRISMi
-        this.Timestampi = Timestampi
     }
     static from(data){
         const obj = JSON.parse(data);
-        const timestampi = BigInt(obj.Timestampi);
         const gBlurPassPRISMi = Point.fromB64(obj.GBlurPassPrism)
-        return new ConvertResponse(obj.EncryptedData, gBlurPassPRISMi, timestampi);
+        return new CMKConvertResponse(obj.EncryptedData, gBlurPassPRISMi, timestampi);
     }
 }

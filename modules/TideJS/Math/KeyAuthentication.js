@@ -17,7 +17,7 @@
 
 import Point from "../Ed25519/point.js";
 import AuthenticateResponse from "../Models/AuthenticateResponse.js";
-import ConvertResponse from "../Models/ConvertResponse.js";
+import ConvertResponse from "../Models/CMKConvertResponse.js";
 import EncryptedConvertResponse from "../Models/EncryptedConvertResponse.js";
 import PreSignInResponse from "../Models/PreSignInResponse.js";
 import SignInResponse from "../Models/SignInResponse.js";
