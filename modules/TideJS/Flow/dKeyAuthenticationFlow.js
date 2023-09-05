@@ -27,7 +27,7 @@ export default class dKeyAuthenticationFlow{
      * @param {boolean} cmkCommitted
      * @param {boolean} cvkCommitted
      */
-    constructor(CMKorks, cmkCommitted, cvkCommitted, prismCommitted) {
+    constructor(CMKorks, cmkCommitted, cvkCommitted) {
         /**
          * @type {[string, string, Point][]}  // everything about CMK orks of this user - orkID, orkURL, orkPublic
          */
@@ -35,7 +35,6 @@ export default class dKeyAuthenticationFlow{
         this.threshold = 3;
         this.cmkTest = !cmkCommitted
         this.cvkTest = !cvkCommitted
-        this.prismTest = !prismCommitted
 }
 
     /**
@@ -53,7 +52,7 @@ export default class dKeyAuthenticationFlow{
         const clients = this.CMKorks.map(ork => new NodeClient(ork[1])) // create node clients
 
         // Here we also find out which ORKs are up
-        const pre_ConvertResponses = clients.map(client => client.Convert(uid, gBlurUser, gBlurPass, this.cmkTest));
+        const pre_ConvertResponses = clients.map(client => client.CMKConvert(uid, gBlurUser, gBlurPass, this.cmkTest));
         const settledPromises = await Promise.allSettled(pre_ConvertResponses);// determine which promises were fulfilled
         var activeOrks = []
         settledPromises.forEach((promise, i) => {

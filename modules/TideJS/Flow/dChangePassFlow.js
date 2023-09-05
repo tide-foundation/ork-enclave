@@ -2,10 +2,11 @@ import NodeClient from "../Clients/NodeClient.js";
 import { GetLi } from "../Math/SecretShare.js";
 import Point from "../Ed25519/point.js";
 import PrismConvertResponse from "../Models/PrismConvertResponse.js"
-import { PrismConvertReply } from "../Math/KeyAuthentication.js";
+import { GetDecryptedChallenge, PrismConvertReply } from "../Math/KeyAuthentication.js";
 import dKeyGenerationFlow from "./dKeyGenerationFlow.js";
 import { mod_inv, BigIntFromByteArray } from "../Tools/Utils.js";
 import { SHA256_Digest } from "../Tools/Hash.js";
+import TestSignIn from "../Functions/TestSignIn.js";
 
 export default class dChangePassFlow{
     /**
@@ -14,9 +15,9 @@ export default class dChangePassFlow{
      */
     constructor(cmkOrkInfo){
         this.cmkOrkInfo = cmkOrkInfo;
-        this.cvkOrkInfo = undefined;
+        this.savedState = undefined;
     }
-    async GetPrism(uid, gBlurPass, r1, startTime){
+    async Authenticate(uid, gBlurPass, r1){
         const clients = this.cmkOrkInfo.map(ork => new NodeClient(ork[1])) // create node clients
 
         // Here we also find out which ORKs are up
@@ -41,23 +42,44 @@ export default class dChangePassFlow{
         // @ts-ignore
         const PrismConvertResponses = settledPromises.filter(promise => promise.status === "fulfilled").map(promise => promise.value); // .value will exist here as we have filtered the responses above
         
-        return await PrismConvertReply(PrismConvertResponses, lis, this.cmkOrkInfo.map(c => c[2]), r1, startTime);
+        return await GetDecryptedChallenge(PrismConvertResponses, lis, this.cmkOrkInfo.map(c => c[2]), r1);
     }
-    async ChangePrism(uid, gBlurNewPass, r1){
+    /**
+     * @param {string} uid 
+     * @param {Point} gBlurNewPass 
+     * @param {bigint} r2 
+     * @param {string[]} decryptedChallenges 
+     * @returns 
+     */
+    async ChangePrism(uid, gBlurNewPass, r2, decryptedChallenges){
         const prismGenFlow = new dKeyGenerationFlow(this.cmkOrkInfo);
-        const prismGenShardData = await prismGenFlow.GenShard(uid, 1, [gBlurNewPass]);  // GenShard
+        const prismGenShardData = await prismGenFlow.UpdateShard(uid, decryptedChallenges, [gBlurNewPass]);  // GenShard
 
-        const gNewPassPRISM = prismGenShardData.gMultiplied[0].times(mod_inv(r1));
+        const gNewPassPRISM = prismGenShardData.gMultiplied[0].times(mod_inv(r2));
         const gNewPRISMAuth = Point.g.times(BigIntFromByteArray(await SHA256_Digest(gNewPassPRISM.toArray())));
 
         const prismSendShardData = await prismGenFlow.SendShard(uid, prismGenShardData.sortedShares, prismGenShardData.R2, prismGenShardData.timestamp, gNewPRISMAuth, "Prism", prismGenShardData.gK1);  // async SendShard
-        return prismSendShardData;
+        this.savedState = {
+            prismSig: prismSendShardData.S,
+            genFlow: prismGenFlow
+        };
     }
-    async Test(){
-        const testSignIn = new TestSignIn(this.cmkOrkInfo, this.cvkOrkInfo, true);
-        
+    /**
+     * @param {string} uid 
+     * @param {Point} gUser 
+     * @param {Point} gNewPass 
+     * @param {string} gVVK 
+     * @param {Point} cmkPub 
+     * @param {Point} cvkPub 
+     * @returns 
+     */
+    async Test(uid, gUser, gNewPass, gVVK, cmkPub, cvkPub=null){
+        const testSignIn = new TestSignIn(this.cmkOrkInfo, undefined, false);
+        const {jwt} = await testSignIn.start(uid, gUser, gNewPass, gVVK, cmkPub, cvkPub);
+        return jwt;
     }
-    async CommitPrism(){
-
+    async CommitPrism(uid){
+        if(this.savedState == undefined) throw Error("No saved state")
+        await this.savedState.genFlow.Commit(uid, this.savedState.prismSig, "Prism");
     }
 }

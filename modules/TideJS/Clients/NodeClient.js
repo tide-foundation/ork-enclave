@@ -19,7 +19,7 @@ import Point from "../Ed25519/point.js"
 import GenShardResponse from "../Models/GenShardResponse.js";
 import ClientBase from "./ClientBase.js"
 import SendShardResponse from "../Models/SendShardResponse.js";
-import ConvertResponse from "../Models/CMKConvertResponse.js";
+import CMKConvertResponse from "../Models/CMKConvertResponse.js";
 import PrismConvertResponse from "../Models/PrismConvertResponse.js"
 
 export default class NodeClient extends ClientBase {
@@ -42,7 +42,7 @@ export default class NodeClient extends ClientBase {
      * @param {boolean} prismCommitted
      * @returns {Promise<PrismConvertResponse>}
      */
-    async PrismConvert(uid, gBlurPass, prismCommitted=false) {
+    async PrismConvert(uid, gBlurPass, prismCommitted=true) {
         const data = this._createFormData({  
             'gBlurPass': gBlurPass.toBase64(),
             'prismCommitted': prismCommitted
@@ -54,20 +54,20 @@ export default class NodeClient extends ClientBase {
 
     /**
      * @param {Point} gBlurUser
-     * @param {Point} gBlurPass
      * @param {string} uid 
-     * @param {boolean} test
+     * @param {boolean} cmkCommitted
+     * @param {boolean} prismCommitted
      * @returns {Promise<ConvertResponse>}
      */
-    async Convert(uid, gBlurUser, gBlurPass, test=false) {
+    async CMKConvert(uid, gBlurUser, cmkCommitted=true, prismCommitted=true) {
         const data = this._createFormData({ 
             'gBlurUser': gBlurUser.toBase64(), 
-            'gBlurPass': gBlurPass.toBase64(),
-            'test': test
+            'cmkCommitted': cmkCommitted,
+            'prismCommitted': prismCommitted
         })
         const response = await this._post(`/CMK/Convert?uid=${uid}`, data)
         const responseData = await this._handleError(response, "Convert CMK/Prism");
-        return ConvertResponse.from(responseData);
+        return CMKConvertResponse.from(responseData);
     }
 
     /**
@@ -161,6 +161,28 @@ export default class NodeClient extends ClientBase {
         const response = await this._post(`/Create/GenShard?uid=${uid}`, data);
 
         const responseData = await this._handleError(response, "GenShard");
+        return GenShardResponse.from(responseData);
+    }
+
+    /**
+     * 
+     * @param {string} uid 
+     * @param {bigint[]} mIdORKij 
+     * @param {string} decryptedChallenge 
+     * @param {Point[]} gMultipliers 
+     * @returns 
+     */
+    async UpdateShard(uid, mIdORKij, decryptedChallenge, gMultipliers){
+        const data = this._createFormData(
+            {
+                'mIdORKij': mIdORKij.map(n => n.toString()),
+                'gMultipliers': gMultipliers.map(p => p == null ? "" : p.toBase64()),
+                'decryptedChallengei': decryptedChallenge
+            }
+        );
+        const response = await this._post(`/Create/UpdateShard?uid=${uid}`, data);
+
+        const responseData = await this._handleError(response, "UpdateShard");
         return GenShardResponse.from(responseData);
     }
 

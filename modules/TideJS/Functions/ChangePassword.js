@@ -3,15 +3,16 @@ import dKeyAuthenticationFlow from "../Flow/dKeyAuthenticationFlow.js";
 import HashToPoint from "../Tools/H2P.js";
 import { RandomBigInt } from "../Tools/Utils.js";
 import Point from "../Ed25519/point.js";
+import dChangePassFlow from "../Flow/dChangePassFlow.js";
 
 export default class ChangePassword{
     /**
      * @param {string} username 
      * @param {string} oldPassword 
      * @param {string} newPassword 
+     * @param {string} gVVK
      */
-    static async start(username, oldPassword, newPassword){
-        const startTime = BigInt(Math.floor(Date.now() / 1000));
+    static async start(username, oldPassword, newPassword, gVVK){
         const r1 = RandomBigInt();
         const r2 = RandomBigInt();
         //hash username
@@ -23,6 +24,7 @@ export default class ChangePassword{
         const pre_cmkPub = simClient.GetKeyPublic(uid);
 
         //convert password to point
+        const gUser = await HashToPoint(username.toLowerCase() + gVVK);
         const gPass = await HashToPoint(oldPassword);
         const gNewPass = await HashToPoint(newPassword);
         const gBlurPass = gPass.times(r1);
@@ -32,7 +34,10 @@ export default class ChangePassword{
         const cmkOrkInfo = await pre_orkInfo;
         const cmkPub = await pre_cmkPub;
 
-
-
+        const changePassFlow = new dChangePassFlow(cmkOrkInfo);
+        const decryptedChallenges = await changePassFlow.Authenticate();
+        await changePassFlow.ChangePrism(uid, gBlurNewPass, r2, decryptedChallenges);
+        await changePassFlow.Test(uid, gUser, gNewPass, gVVK, cmkPub);
+        await changePassFlow.CommitPrism(uid);
     }
 }

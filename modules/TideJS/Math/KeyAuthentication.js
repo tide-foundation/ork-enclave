@@ -33,6 +33,32 @@ import { GetLi } from "./SecretShare.js";
 import PrismConvertResponse from "../Models/PrismConvertResponse.js"
 
 /**
+ * For use in change password flow
+ * @param {PrismConvertResponse[]} convertResponses 
+ * @param {bigint[]} lis 
+ * @param {Point[]} mgORKi 
+ * @param {bigint} r1 
+ * @returns 
+ */
+export async function GetDecryptedChallenge(convertResponses, lis, mgORKi, r1){
+    const gPassPRISM = convertResponses.reduce((sum, next, i) => sum.add(next.GBlurPassPRISMi.times(lis[i])), Point.infinity).times(mod_inv(r1));
+    const gPassPRISM_hashed = mod(BigIntFromByteArray(await SHA256_Digest(gPassPRISM.toArray())));
+
+    const pre_prismAuthi = mgORKi.map(async ork => await SHA256_Digest(ork.times(gPassPRISM_hashed).toArray())) // create a prismAuthi for each ork
+    const prismAuthis = await Promise.all(pre_prismAuthi); // wait for all async functions to finish
+
+    let decryptedChallenges;
+    try{
+        const pre_decData = convertResponses.map(async (resp, i) => await AES.decryptData(resp.EncChallengei, prismAuthis[i]));
+        decryptedChallenges = await Promise.all(pre_decData);
+    }catch{
+        throw Error("Wrong password");
+    }
+
+    return decryptedChallenges;
+}
+
+/**
  * @param {ConvertResponse[] | PrismConvertResponse[]} convertResponses 
  * @param {Point[]} mgORKi 
  * @param {bigint[]} lis 
