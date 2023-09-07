@@ -92,7 +92,7 @@ export default class SignIn {
         const cmkOrkInfo = await pre_orkInfo;
         const cmkPub = await pre_cmkPub;
 
-        const authFlow = new dKeyAuthenticationFlow(cmkOrkInfo, true, true);
+        const authFlow = new dKeyAuthenticationFlow(cmkOrkInfo, true, true, true);
         const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK);
 
         let cvkPub;
@@ -188,7 +188,7 @@ export default class SignIn {
     async commitCVK(modelToSign_p=null){
         if(!this.savedState.VUID) throw Error("No VUID available in saved state"); // use this to determine not only if savedState exists, but also for VUID (from createCVK process)
 
-        const testSignIn = new TestSignIn(this.savedState.cmkOrkInfo, this.savedState.cmkOrkInfo, false); // send cmkOrkInfo twice as there is no vendor selection of CVK orks yet
+        const testSignIn = new TestSignIn(this.savedState.cmkOrkInfo, this.savedState.cmkOrkInfo, true, false, true); // send cmkOrkInfo twice as there is no vendor selection of CVK orks yet
         const {jwt, modelSig} = await testSignIn.start(this.savedState.uid, this.savedState.gUser, this.savedState.gPass, this.savedState.gVVK,
             this.savedState.cmkPub, this.savedState.cvkPub, modelToSign_p);
         

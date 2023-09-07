@@ -132,7 +132,7 @@ export default class SignUp {
         if(modelToSign == null && this.modelToSign == null) this.mode = "default"; // revert mode to default if no model to sign provided
 
         // Test sign in
-        const testSignIn = new TestSignIn(this.cmkOrkInfo, this.cvkOrkInfo, true);
+        const testSignIn = new TestSignIn(this.cmkOrkInfo, this.cvkOrkInfo, false, false, false);
         const {jwt, modelSig} = await testSignIn.start(this.savedState.uid, this.savedState.gUser, this.savedState.gPass, this.savedState.gVVK, this.savedState.cmkPub, this.savedState.cvkPub, modelToSign)
         
         // Test dDecrypt

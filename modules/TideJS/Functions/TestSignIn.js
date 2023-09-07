@@ -6,10 +6,12 @@ import SimulatorClient from "../Clients/SimulatorClient.js";
 
 
 export default class TestSignIn{
-    constructor(cmkOrkInfo, cvkOrkInfo, newUser){
+    constructor(cmkOrkInfo, cvkOrkInfo, cmkCommitted, cvkCommitted, prismCommitted){
         this.cmkOrkInfo = cmkOrkInfo
         this.cvkOrkInfo = cvkOrkInfo // will change in future when vendor wants specific orks in new cvk rego
-        this.cmkCommitted = newUser ? false : true;
+        this.cmkCommitted = cmkCommitted
+        this.cvkCommitted = cvkCommitted
+        this.prismCommitted = prismCommitted
     }
 
     /**
@@ -34,7 +36,7 @@ export default class TestSignIn{
         
         const gBlurPass = gPass.times(r1);
 
-        const authFlow = new dKeyAuthenticationFlow(this.cmkOrkInfo, this.cmkCommitted, false);
+        const authFlow = new dKeyAuthenticationFlow(this.cmkOrkInfo, this.cmkCommitted, this.cvkCommitted, this.prismCommitted);
         const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK);
         
         authFlow.CVKorks = this.cvkOrkInfo == undefined ? await new SimulatorClient().GetUserORKs(uid) : this.cvkOrkInfo;

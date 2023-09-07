@@ -74,7 +74,7 @@ export default class dChangePassFlow{
      * @returns 
      */
     async Test(uid, gUser, gNewPass, gVVK, cmkPub, cvkPub=null){
-        const testSignIn = new TestSignIn(this.cmkOrkInfo, undefined, false);
+        const testSignIn = new TestSignIn(this.cmkOrkInfo, undefined, true, true, false);
         const {jwt} = await testSignIn.start(uid, gUser, gNewPass, gVVK, cmkPub, cvkPub);
         return jwt;
     }
