@@ -35,7 +35,7 @@ export default class dChangePassFlow{
         this.cmkOrkInfo = activeOrks;
 
         // Generate lis for CMKOrks based on the ones that replied
-        const ids = this.CMKorks.map(ork => BigInt(ork[0])); // create lis for all orks that responded
+        const ids = this.cmkOrkInfo.map(ork => BigInt(ork[0])); // create lis for all orks that responded
         const lis = ids.map(id => GetLi(id, ids, Point.order));
 
         /**@type {PrismConvertResponse[]} */
