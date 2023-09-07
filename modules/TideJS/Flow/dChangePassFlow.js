@@ -21,7 +21,7 @@ export default class dChangePassFlow{
         const clients = this.cmkOrkInfo.map(ork => new NodeClient(ork[1])) // create node clients
 
         // Here we also find out which ORKs are up
-        const pre_ConvertResponses = clients.map(client => client.PrismConvert(uid, gBlurPass, false));
+        const pre_ConvertResponses = clients.map(client => client.PrismConvert(uid, gBlurPass, true));
         const settledPromises = await Promise.allSettled(pre_ConvertResponses);// determine which promises were fulfilled
         var activeOrks = []
         settledPromises.forEach((promise, i) => {
