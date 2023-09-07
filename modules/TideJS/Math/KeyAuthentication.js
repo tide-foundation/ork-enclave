@@ -70,6 +70,7 @@ export async function PrismConvertReply(convertResponses, lis, mgORKi, r1, start
 
     const pre_prismAuthi = mgORKi.map(async ork => await SHA256_Digest(ork.times(gPassPRISM_hashed).toArray())) // create a prismAuthi for each ork
     const prismAuthis = await Promise.all(pre_prismAuthi); // wait for all async functions to finish
+    console.log(bytesToBase64(prismAuthis[0]));
 
     const deltaTime = median(convertResponses.map(resp => resp.Timestampi)) - startTime;
     
