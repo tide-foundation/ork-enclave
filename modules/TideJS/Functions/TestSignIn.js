@@ -37,6 +37,7 @@ export default class TestSignIn{
         const gBlurPass = gPass.times(r1);
 
         const authFlow = new dKeyAuthenticationFlow(this.cmkOrkInfo, this.cmkCommitted, this.cvkCommitted, this.prismCommitted);
+        console.log("1: " + gPass.toBase64());
         const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK);
         
         authFlow.CVKorks = this.cvkOrkInfo == undefined ? await new SimulatorClient().GetUserORKs(uid) : this.cvkOrkInfo;
