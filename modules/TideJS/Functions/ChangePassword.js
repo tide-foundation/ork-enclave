@@ -4,6 +4,8 @@ import HashToPoint from "../Tools/H2P.js";
 import { RandomBigInt } from "../Tools/Utils.js";
 import Point from "../Ed25519/point.js";
 import dChangePassFlow from "../Flow/dChangePassFlow.js";
+import { Bytes2Hex } from "../Tools/Utils.js";
+import { SHA256_Digest } from "../Tools/Hash.js";
 
 export default class ChangePassword{
     /**
