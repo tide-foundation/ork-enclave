@@ -49,14 +49,14 @@ export default class dKeyGenerationFlow {
      * 
      * @param {string} uid 
      * @param {string[]} decryptedChallenges 
-     * @param {Point[]} gMultipliers 
+     * @param {Point} gMultiplier
      * @returns 
      */
-    async UpdateShard(uid, decryptedChallenges, gMultipliers){
+    async UpdateShard(uid, decryptedChallenges, gMultiplier){
         const clients = this.orks.map(ork => new NodeClient(ork[1])) // create node clients
 
         const ids = this.orks.map(ork => BigInt(ork[0]));
-        const pre_GenShardResponses = clients.map((client, i) => client.UpdateShard(uid, ids, decryptedChallenges[i], gMultipliers));
+        const pre_GenShardResponses = clients.map((client, i) => client.UpdateShard(uid, ids, decryptedChallenges[i], gMultiplier));
         const GenShardResponses = await Promise.all(pre_GenShardResponses);
 
         return GenShardReply(GenShardResponses);

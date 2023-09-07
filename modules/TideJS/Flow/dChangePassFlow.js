@@ -53,7 +53,7 @@ export default class dChangePassFlow{
      */
     async ChangePrism(uid, gBlurNewPass, r2, decryptedChallenges){
         const prismGenFlow = new dKeyGenerationFlow(this.cmkOrkInfo);
-        const prismGenShardData = await prismGenFlow.UpdateShard(uid, decryptedChallenges, [gBlurNewPass]);  // GenShard
+        const prismGenShardData = await prismGenFlow.UpdateShard(uid, decryptedChallenges, gBlurNewPass);  // GenShard
 
         const gNewPassPRISM = prismGenShardData.gMultiplied[0].times(mod_inv(r2));
         const gNewPRISMAuth = Point.g.times(BigIntFromByteArray(await SHA256_Digest(gNewPassPRISM.toArray())));

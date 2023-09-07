@@ -175,14 +175,14 @@ export default class NodeClient extends ClientBase {
      * @param {string} uid 
      * @param {bigint[]} mIdORKij 
      * @param {string} decryptedChallenge 
-     * @param {Point[]} gMultipliers 
+     * @param {Point} gMultiplier
      * @returns 
      */
-    async UpdateShard(uid, mIdORKij, decryptedChallenge, gMultipliers){
+    async UpdateShard(uid, mIdORKij, decryptedChallenge, gMultiplier){
         const data = this._createFormData(
             {
                 'mIdORKij': mIdORKij.map(n => n.toString()),
-                'gMultipliers': gMultipliers.map(p => p == null ? "" : p.toBase64()),
+                'gMultiplier': gMultiplier.toBase64(),
                 'decryptedChallengei': decryptedChallenge
             }
         );
