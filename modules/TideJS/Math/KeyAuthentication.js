@@ -66,6 +66,7 @@ export async function GetDecryptedChallenge(convertResponses, lis, mgORKi, r1){
  */
 export async function PrismConvertReply(convertResponses, lis, mgORKi, r1, startTime){    
     const gPassPRISM = convertResponses.reduce((sum, next, i) => sum.add(next.GBlurPassPRISMi.times(lis[i])), Point.infinity).times(mod_inv(r1));
+    console.log("gpassprism: " + gPassPRISM.toBase64());
     const gPassPRISM_hashed = mod(BigIntFromByteArray(await SHA256_Digest(gPassPRISM.toArray())));
 
     const pre_prismAuthi = mgORKi.map(async ork => await SHA256_Digest(ork.times(gPassPRISM_hashed).toArray())) // create a prismAuthi for each ork
