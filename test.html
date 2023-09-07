@@ -12,7 +12,8 @@
         var su = new SignUp(config);
         var user = Date.now().toString();
         var gVVK = "WGZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmY=";
-        var jwt1 = await su.start(user, "a", gVVK);
+        await su.start(user, "a", gVVK);
+        var jwt1 = await su.continue();
         console.log("Sign up good " + jwt1);
 
         // Change Password
@@ -24,7 +25,8 @@
             mode: "default"
         }
         var si = new SignIn(newConfig);
-        var {jwt, modelSig} = await si.start(user, "b", gVVK);
+        await si.start(user, "b", gVVK);
+        var jwt = await si.continue();
         console.log("Sign in good " + jwt);
 
     </script>
