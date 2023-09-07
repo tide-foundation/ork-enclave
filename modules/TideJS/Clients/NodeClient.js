@@ -74,14 +74,16 @@ export default class NodeClient extends ClientBase {
      * @param {string} decryptedChallenge
      * @param {string} encryptedAuthRequest
      * @param {string} uid 
-     * @param {boolean} test
+     * @param {boolean} cmkCommitted
+     * @param {boolean} prismCommitted
      * @returns {Promise<string>}
      */
-    async Authenticate(uid, decryptedChallenge, encryptedAuthRequest, test=false) {
+    async Authenticate(uid, decryptedChallenge, encryptedAuthRequest, cmkCommitted=true, prismCommitted=true) {
         const data = this._createFormData({ 
             'decryptedChallenge': decryptedChallenge, 
             'encAuthRequest': encryptedAuthRequest,
-            'test': test
+            'cmkCommitted': cmkCommitted,
+            'prismCommitted': prismCommitted
         })
         const response = await this._post(`/CMK/Authenticate?uid=${uid}`, data)
 
@@ -119,9 +121,9 @@ export default class NodeClient extends ClientBase {
      * @param {string} mode
      * @param {string} modelToSign
      * @param {Point} gR2
-     * @param {boolean} test
+     * @param {boolean} cvkCommitted
      */
-    async SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, li, gBlindH, mode="default", modelToSign=null, gR2=null, test=false){
+    async SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, li, gBlindH, mode="default", modelToSign=null, gR2=null, cvkCommitted=true){
         if(mode != "default" && (modelToSign == null || gR2 == null)) throw new Error("Model to sign expected");
         const data = this._createFormData({ 
             'jwt': jwt, 
@@ -134,7 +136,7 @@ export default class NodeClient extends ClientBase {
             'mode': mode,
             'modelToSign': modelToSign == null ? "" : modelToSign,
             'gR2': gR2 == null ? null : gR2.toBase64(),
-            'test': test
+            'cvkCommitted': cvkCommitted
         });
         const response = await this._post(`/CVK/SignIn?uid=${vuid}`, data)
         const encSigs = await this._handleError(response, "SignInCVK");
