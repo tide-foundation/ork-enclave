@@ -54,7 +54,7 @@ export default class dKeyAuthenticationFlow{
         const clients = this.CMKorks.map(ork => new NodeClient(ork[1])) // create node clients
 
         // Here we also find out which ORKs are up
-        const pre_ConvertResponses = clients.map(client => client.CMKConvert(uid, gBlurUser, gBlurPass, this.cmkCommitted, this.prismCommitted));
+        const pre_ConvertResponses = clients.map(client => client.Convert(uid, gBlurUser, gBlurPass, this.cmkCommitted, this.prismCommitted));
         const settledPromises = await Promise.allSettled(pre_ConvertResponses);// determine which promises were fulfilled
         var activeOrks = []
         settledPromises.forEach((promise, i) => {
@@ -71,12 +71,12 @@ export default class dKeyAuthenticationFlow{
         const ids = this.CMKorks.map(ork => BigInt(ork[0])); // create lis for all orks that responded
         const lis = ids.map(id => GetLi(id, ids, Point.order));
 
-        /**@type {ConvertResponse[]} */
+        /**@type {{CMKConvertResponse: ConvertResponse, PrismConvertResponse: PrismConvertResponse}[]} */
         // @ts-ignore
         const ConvertResponses = settledPromises.filter(promise => promise.status === "fulfilled").map(promise => promise.value); // .value will exist here as we have filtered the responses above
         
-        const {prismAuthis, deltaTime} = await PrismConvertReply(ConvertResponses, lis, this.CMKorks.map(c => c[2]), r1, startTime);
-        return await CmkConvertReply(uid, ConvertResponses, lis, prismAuthis, gCMK, r2, deltaTime, gVVK);
+        const {prismAuthis, deltaTime} = await PrismConvertReply(ConvertResponses.map(c => c.PrismConvertResponse), lis, this.CMKorks.map(c => c[2]), r1, startTime);
+        return await CmkConvertReply(uid, ConvertResponses.map(c => c.CMKConvertResponse), lis, prismAuthis, gCMK, r2, deltaTime, gVVK);
     }
 
     /**

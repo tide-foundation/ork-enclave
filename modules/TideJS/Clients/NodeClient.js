@@ -53,21 +53,26 @@ export default class NodeClient extends ClientBase {
     }
 
     /**
-     * @param {Point} gBlurUser
      * @param {string} uid 
+     * @param {Point} gBlurUser
+     * @param {Point} gBlurPass
      * @param {boolean} cmkCommitted
      * @param {boolean} prismCommitted
-     * @returns {Promise<ConvertResponse>}
+     * @returns
      */
-    async CMKConvert(uid, gBlurUser, cmkCommitted=true, prismCommitted=true) {
+    async Convert(uid, gBlurUser, gBlurPass, cmkCommitted=true, prismCommitted=true) {
         const data = this._createFormData({ 
             'gBlurUser': gBlurUser.toBase64(), 
+            'gBlurPass': gBlurPass.toBase64(), 
             'cmkCommitted': cmkCommitted,
             'prismCommitted': prismCommitted
         })
         const response = await this._post(`/CMK/Convert?uid=${uid}`, data)
         const responseData = await this._handleError(response, "Convert CMK/Prism");
-        return CMKConvertResponse.from(responseData);
+        return {
+            "CMKConvertResponse":  CMKConvertResponse.from(responseData.split("|")[0]),
+            "PrismConvertResponse": PrismConvertResponse.from(responseData.split("|")[1])
+        }
     }
 
     /**
