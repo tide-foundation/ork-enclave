@@ -89,7 +89,7 @@ export async function PrismConvertReply(convertResponses, lis, mgORKi, r1, start
 export async function CmkConvertReply(id, convertResponses, lis, prismAuthis, gCMK, r2, deltaTime, gVVK){
     let decData;
     try{
-        const pre_decData = convertResponses.map(async (resp, i) => EncryptedConvertResponse.from(await AES.decryptData(resp.EncryptedData, prismAuthis[i])));
+        const pre_decData = convertResponses.map(async (resp, i) => EncryptedConvertResponse.from(await AES.decryptData(resp, prismAuthis[i])));
         decData = await Promise.all(pre_decData);
     }catch{
         throw Error("Wrong password");
