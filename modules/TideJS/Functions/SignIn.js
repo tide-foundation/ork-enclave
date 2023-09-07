@@ -39,7 +39,6 @@ export default class SignIn {
      * @param {object} config 
      */
     constructor(config) {
-        if (!Object.hasOwn(config, 'simulatorUrl')) { throw Error("Simulator Url has not been included in config") }
 
         /**
          * @type {string}
@@ -50,11 +49,6 @@ export default class SignIn {
          * @type {string}
          */
         this.modelToSign = Object.hasOwn(config, 'modelToSign') ? config.modelToSign : null;
-
-        /**
-         * @type {string}
-         */
-        this.simulatorUrl = config.simulatorUrl
 
         this.savedState = {}
 

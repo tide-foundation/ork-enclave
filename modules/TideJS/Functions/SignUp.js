@@ -40,7 +40,6 @@ export default class SignUp {
     constructor(config) {
         if (!Object.hasOwn(config, 'cmkOrkInfo')) { throw Error("CMK OrkInfo has not been included in config") }
         if (!Object.hasOwn(config, 'cvkOrkInfo')) { throw Error("CVK OrkInfo has not been included in config") }
-        if (!Object.hasOwn(config, 'simulatorUrl')) { throw Error("Simulator Url has not been included in config") }
 
         /**
          * @type {[string, string, Point][]}
@@ -50,11 +49,6 @@ export default class SignUp {
          * @type {[string, string, Point][]}
          */
         this.cvkOrkInfo = config.cvkOrkInfo
-        /**
-         * @type {string}
-         */
-        this.simulatorUrl = config.simulatorUrl
-
         /**
          * @type {string}
          */
