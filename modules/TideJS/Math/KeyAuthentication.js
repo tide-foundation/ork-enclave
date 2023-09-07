@@ -79,6 +79,7 @@ export async function PrismConvertReply(convertResponses, lis, mgORKi, r1, start
 /**
  * @param {string} id
  * @param {string[]} convertResponses 
+ * @param {string[]} encryptedChallenges
  * @param {bigint[]} lis 
  * @param {Uint8Array[]} prismAuthis
  * @param {Point} gCMK 
@@ -86,11 +87,14 @@ export async function PrismConvertReply(convertResponses, lis, mgORKi, r1, start
  * @param {bigint} deltaTime
  * @param {string} gVVK
  */
-export async function CmkConvertReply(id, convertResponses, lis, prismAuthis, gCMK, r2, deltaTime, gVVK){
+export async function CmkConvertReply(id, convertResponses, encryptedChallenges, lis, prismAuthis, gCMK, r2, deltaTime, gVVK){
     let decData;
+    let decChallenges;
     try{
         const pre_decData = convertResponses.map(async (resp, i) => EncryptedConvertResponse.from(await AES.decryptData(resp, prismAuthis[i])));
+        const pre_decChallenges = encryptedChallenges.map(async (chall, i) => await AES.decryptData(chall, prismAuthis[i]));
         decData = await Promise.all(pre_decData);
+        decChallenges = await Promise.all(pre_decChallenges);
     }catch{
         throw Error("Wrong password");
     }
@@ -130,7 +134,7 @@ export async function CmkConvertReply(id, convertResponses, lis, prismAuthis, gC
         'SessKey': SessKey
     }
 
-    return {VUID: VUID, encAuthRequests: encAuthRequests, timestamp2: timestamp2, jwt: jwt, gSessKeyPub: gSessKeyPub, data_for_PreSignInCVK: data_for_PreSignInCVK, decChallengei: decData.map(a => a.Challengei)}
+    return {VUID: VUID, encAuthRequests: encAuthRequests, timestamp2: timestamp2, jwt: jwt, gSessKeyPub: gSessKeyPub, data_for_PreSignInCVK: data_for_PreSignInCVK, decChallengei: decChallenges}
 }
 
 /**

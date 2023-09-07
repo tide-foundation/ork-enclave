@@ -19,6 +19,7 @@ import NodeClient from "../Clients/NodeClient.js";
 import Point from "../Ed25519/point.js";
 import { CmkConvertReply, PreSignInCVKReply, PrismConvertReply, SignInCVKReply } from "../Math/KeyAuthentication.js";
 import { GetLi } from "../Math/SecretShare.js";
+import PrismConvertResponse from "../Models/PrismConvertResponse.js";
 
 export default class dKeyAuthenticationFlow{
     /**
@@ -75,7 +76,7 @@ export default class dKeyAuthenticationFlow{
         const ConvertResponses = settledPromises.filter(promise => promise.status === "fulfilled").map(promise => promise.value); // .value will exist here as we have filtered the responses above
         
         const {prismAuthis, deltaTime} = await PrismConvertReply(ConvertResponses.map(c => c.PrismConvertResponse), lis, this.CMKorks.map(c => c[2]), r1, startTime);
-        return await CmkConvertReply(uid, ConvertResponses.map(c => c.CMKConvertResponse), lis, prismAuthis, gCMK, r2, deltaTime, gVVK);
+        return await CmkConvertReply(uid, ConvertResponses.map(c => c.CMKConvertResponse), ConvertResponses.map(c => c.PrismConvertResponse.EncChallengei), lis, prismAuthis, gCMK, r2, deltaTime, gVVK);
     }
 
     /**
