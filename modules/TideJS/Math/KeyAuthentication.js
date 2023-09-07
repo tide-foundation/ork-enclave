@@ -17,7 +17,6 @@
 
 import Point from "../Ed25519/point.js";
 import AuthenticateResponse from "../Models/AuthenticateResponse.js";
-import ConvertResponse from "../Models/CMKConvertResponse.js";
 import EncryptedConvertResponse from "../Models/EncryptedConvertResponse.js";
 import PreSignInResponse from "../Models/PreSignInResponse.js";
 import SignInResponse from "../Models/SignInResponse.js";
@@ -31,7 +30,6 @@ import { mod_inv } from "../Tools/Utils.js";
 import { AES, Utils } from "../index.js";
 import { GetLi } from "./SecretShare.js";
 import PrismConvertResponse from "../Models/PrismConvertResponse.js"
-import CMKConvertResponse from "../Models/CMKConvertResponse.js";
 
 /**
  * For use in change password flow
@@ -80,7 +78,7 @@ export async function PrismConvertReply(convertResponses, lis, mgORKi, r1, start
 
 /**
  * @param {string} id
- * @param {CMKConvertResponse[]} convertResponses 
+ * @param {string[]} convertResponses 
  * @param {bigint[]} lis 
  * @param {Uint8Array[]} prismAuthis
  * @param {Point} gCMK 

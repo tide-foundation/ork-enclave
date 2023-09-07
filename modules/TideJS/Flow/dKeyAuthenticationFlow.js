@@ -19,7 +19,6 @@ import NodeClient from "../Clients/NodeClient.js";
 import Point from "../Ed25519/point.js";
 import { CmkConvertReply, PreSignInCVKReply, PrismConvertReply, SignInCVKReply } from "../Math/KeyAuthentication.js";
 import { GetLi } from "../Math/SecretShare.js";
-import ConvertResponse from "../Models/CMKConvertResponse.js";
 
 export default class dKeyAuthenticationFlow{
     /**
@@ -71,7 +70,7 @@ export default class dKeyAuthenticationFlow{
         const ids = this.CMKorks.map(ork => BigInt(ork[0])); // create lis for all orks that responded
         const lis = ids.map(id => GetLi(id, ids, Point.order));
 
-        /**@type {{CMKConvertResponse: ConvertResponse, PrismConvertResponse: PrismConvertResponse}[]} */
+        /**@type {{CMKConvertResponse: string, PrismConvertResponse: PrismConvertResponse}[]} */
         // @ts-ignore
         const ConvertResponses = settledPromises.filter(promise => promise.status === "fulfilled").map(promise => promise.value); // .value will exist here as we have filtered the responses above
         

@@ -19,7 +19,6 @@ import Point from "../Ed25519/point.js"
 import GenShardResponse from "../Models/GenShardResponse.js";
 import ClientBase from "./ClientBase.js"
 import SendShardResponse from "../Models/SendShardResponse.js";
-import CMKConvertResponse from "../Models/CMKConvertResponse.js";
 import PrismConvertResponse from "../Models/PrismConvertResponse.js"
 
 export default class NodeClient extends ClientBase {
@@ -70,7 +69,7 @@ export default class NodeClient extends ClientBase {
         const response = await this._post(`/CMK/Convert?uid=${uid}`, data)
         const responseData = await this._handleError(response, "Convert CMK/Prism");
         return {
-            "CMKConvertResponse":  CMKConvertResponse.from(responseData.split("|")[0]),
+            "CMKConvertResponse":  responseData.split("|")[0],
             "PrismConvertResponse": PrismConvertResponse.from(responseData.split("|")[1])
         }
     }
