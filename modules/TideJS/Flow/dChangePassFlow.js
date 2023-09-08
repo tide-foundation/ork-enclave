@@ -58,7 +58,7 @@ export default class dChangePassFlow{
         const gNewPassPRISM = prismGenShardData.gMultiplied[0].times(mod_inv(r2));
         console.log("gnewpassprism (-): " + gNewPassPRISM.toBase64());
         const gNewPRISMAuth = Point.g.times(BigIntFromByteArray(await SHA256_Digest(gNewPassPRISM.toArray())));
-        console.log("gnewpassprismauth " + gNewPRISMAuth.toBase64());
+        console.log("--gnewpassprismauth " + gNewPRISMAuth.toBase64());
 
         const prismSendShardData = await prismGenFlow.SendShard(uid, prismGenShardData.sortedShares, prismGenShardData.R2, prismGenShardData.timestamp, gNewPRISMAuth, "Prism", prismGenShardData.gK1);  // async SendShard
         this.savedState = {

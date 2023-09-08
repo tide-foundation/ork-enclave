@@ -88,6 +88,7 @@ export default class SignUp {
 
         const {gPRISMAuth, VUID, gCMKAuth} = await this.getKeyPoints(cmkGenShardData.gMultiplied, [r1, r2], cmkGenShardData.gK1);
 
+        console.log("old gprismauth: " + gPRISMAuth.toBase64());
         const pre_cmkSendShardData = cmkGenFlow.SendShard(uid, cmkGenShardData.sortedShares, cmkGenShardData.R2, cmkGenShardData.timestamp, gPRISMAuth, "CMK", cmkGenShardData.gK1);  // async SendShard
 
         const cvkGenFlow = new dKeyGenerationFlow(this.cvkOrkInfo);
