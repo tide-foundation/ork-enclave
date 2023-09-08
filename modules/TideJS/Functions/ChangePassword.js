@@ -38,7 +38,7 @@ export default class ChangePassword{
 
         const changePassFlow = new dChangePassFlow(cmkOrkInfo);
         const decryptedChallenges = await changePassFlow.Authenticate(uid, gBlurPass, r1);
-        await changePassFlow.ChangePrism(uid, gBlurPass, r1, decryptedChallenges);
+        await changePassFlow.ChangePrism(uid, gBlurNewPass, r2, decryptedChallenges);
         await changePassFlow.Test(uid, gUser, gPass, gVVK, cmkPub);
         await changePassFlow.CommitPrism(uid);
     }
