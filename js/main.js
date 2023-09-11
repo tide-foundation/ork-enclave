@@ -284,6 +284,7 @@ var activeOrks = [];
         $('#loader-cp').show();
 
         try{
+            const params = new URLSearchParams(window.location.search);
             await ChangePassword.start(username, oldPassword, newPassword, params.get("vendorPublic"));
             $('#loader-cp').hide();
             // go back to sign In page
