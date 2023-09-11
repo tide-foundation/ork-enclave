@@ -60,6 +60,30 @@ var activeOrks = [];
         return false;
     });
 
+    $('.validate-form-cp').on('submit',function(){
+        var input = $('.validate-input-cp .input100');
+
+        $('#submit-btn-cp').prop('disabled', true);
+        var check = true;
+        
+        for(var i=0; i<input.length; i++) {
+            if(validate(input[i]) == false){
+                showValidate(input[i]);
+                check=false;
+            }
+        }  
+        if (input[1].value != input[2].value) {
+            check = false;
+            showValidate(input[2]);
+        }
+        if(check){
+            changePassword(input[0].value, input[1].value, input[2].value);
+        }  
+        else
+            $('#submit-btn-cp').prop('disabled', false);
+        return false;
+    });
+
     $('.validate-form-su').on('submit', function () {
         var input = $('.validate-input-su .input100');
         $('#submit-btn-su').prop('disabled', true);
@@ -256,24 +280,22 @@ var activeOrks = [];
         
     }
 
-    /*
     async function changePassword(username, oldPassword, newPassword){
-        //$('#loader-su').show(); create new loader
+        $('#loader-cp').show();
 
         try{
             await ChangePassword.start(username, oldPassword, newPassword);
+            $('#loader-cp').hide();
             // go back to sign In page
+            showSignIn(); // function on index.html script
         }catch(e){
-            $('#alert-su').text(e);
-            $('#alert-su').show();
-            $('#submit-btn-su').prop('disabled', false);
-            $('#loader-su').hide();
+            $('#alert-cp').text(e);
+            $('#alert-cp').show();
+            $('#submit-btn-cp').prop('disabled', false);
+            $('#loader-cp').hide();
         }
-
-
     }
-    test basic function first
-*/
+
     
 })(jQuery);
 
