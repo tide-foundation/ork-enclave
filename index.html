@@ -32,7 +32,7 @@
 						</span>
 	
 						<span class="enclave-form-title p-b-34 p-t-27">
-							Sign-in
+							Sign in your authority
 						</span>
 	
 	
@@ -49,7 +49,7 @@
 						
 						<div class="container-enclave-form-btn">
 							<button class="enclave-form-btn" id="submit-btn-si">
-								Login
+								Sign in
 							</button>
 						</div>
 						<p class="txtalert p-t-35" id="alert-si"> </p>
@@ -57,18 +57,22 @@
 						<div class="loading" id ="loader" style="display:none"></div>
 	
 						<div class="text-center p-t-90">
-							<u class="txt1" onclick="switchSignInUp()">
-								Don't have an account?
+							<u class="txt1" onclick="showSignUp()">
+								Create account
 							</u>
 							<span>
 								<u class="txt1 p-l-20" onclick="rehome()">
-									Don't trust this ORK?
+									Change node
+								</u>
+								<u class="txt1 p-l-20" onclick="showChangePassword()">
+									Change password
 								</u>
 							</span>
 						</div>
 					</form>
 				</div>
-	
+
+				<!--Sign Up-->				
 				<div style="display: block;" id="div-su" class="wrap-enclave">
 					<form class="enclave-form validate-form-su">
 						<span class="enclave-form-logo">
@@ -76,7 +80,7 @@
 						</span>
 	
 						<span class="enclave-form-title p-b-34 p-t-27">
-							Sign-up
+							Create an account
 						</span>
 	
 						<div class="wrap-input100 validate-input-su" data-validate = "Enter username">
@@ -95,8 +99,9 @@
 						</div>
 						
 	
+
 						<div class="txt2 p-t-5" style="display: none;">	
-								Select 5 Orks
+								Select 5 nodes
 						</div>
 						<div class = "dropdown" data-validate = "Select 3 orks" style="display: none;">
 							<div class="loading" id ="orkloader"></div>
@@ -107,7 +112,7 @@
 						
 						<div class="container-enclave-form-btn  p-b-3 p-t-27">
 							<button class="enclave-form-btn" id="submit-btn-su">
-								Sign-up
+								Sign Up
 							</button>
 						</div>
 						<p class="txtalert p-t-15" id="alert-su"> </p>
@@ -115,17 +120,90 @@
 						<div class="loading" id ="loader-su" style="display:none"></div>
 	
 						<div class="text-center p-t-30">
-							<u class="txt1" onclick="switchSignInUp()">
-								Login?
+							<u class="txt1" onclick="showSignIn()">
+								Already a user? Sign in
 							</u>
 							<span>
 								<u class="txt1 p-l-20" onclick="rehome()">
-									Don't trust this ORK?
+									Change node
 								</u>
 							</span>
 						</div>
 					</form>
 				</div>
+				<!--Change Password-->
+				<div style="display: none;" id="div-cp" class="wrap-enclave">
+					<form class="enclave-form validate-form-cp">
+						<span class="enclave-form-logo">
+							<img class="s_links" src="images/logo.png">
+						</span>
+
+						<span class="enclave-form-title p-b-34 p-t-27">
+							Change Password
+						</span>
+
+						<div class="wrap-input100 validate-input-cp" data-validate = "Enter new password">
+							<input class="input100" type="password" name="New Password" placeholder="New Password">
+							<span class="focus-input100" data-placeholder="&#xf191;"></span>
+						</div>
+
+						<div class="wrap-input100 validate-input-cp" data-validate="Repeat password">
+							<input class="input100" type="password" name="pass" placeholder="Repeat Password">
+							<span class="focus-input100" data-placeholder="&#xf191;"></span>
+						</div>
+					
+					
+						<div class="container-enclave-form-btn  p-b-3 p-t-27">
+							<button class="enclave-form-btn" id="submit-btn-cp">
+								Done
+							</button>
+						</div>
+						<p class="txtalert p-t-15" id="alert-cp"> </p>
+
+						<div class="loading" id ="loader-cp" style="display:none"></div>
+
+						<div class="text-center p-t-50">
+							<u class="txt1" onclick="showSignIn()">
+								Sign in instead?
+							</u>
+						</div>
+					</form>
+				</div>
+
+				<!--Forgot Password-->
+				<div style="display: none;" id="div-fp" class="wrap-enclave">
+					<form class="enclave-form validate-form-fp">
+						<span class="enclave-form-logo">
+							<img class="s_links" src="images/logo.png">
+						</span>
+
+						<span class="enclave-form-title p-b-34 p-t-27">
+							Forgot Password
+						</span>
+
+						<div class="wrap-input100 validate-input-fp" data-validate = "Enter Username">
+							<input class="input100" type="text" name="username" placeholder="Username" style="text-transform: lowercase;">
+							<span class="focus-input100" data-placeholder="&#xf191;"></span>
+						</div>
+					
+						<div class="container-enclave-form-btn  p-b-3 p-t-27">
+							<button class="enclave-form-btn" id="submit-btn-cp">
+								Request Recovery
+							</button>
+						</div>
+						<p class="txtalert p-t-15" id="alert-cp"> </p>
+
+						<div class="loading" id ="loader-cp" style="display:none"></div>
+
+						<div class="text-center p-t-50">
+							<u class="txt1" onclick="showSignIn()">
+								Remember your password? Sign in
+							</u>
+						</div>
+					</form>
+				</div>
+			
+			
 			</div>
 		</div>
 	
@@ -143,16 +221,21 @@
 				document.getElementById("div-su").style.display = "none";
 			});
 	
-			
-	
-			function switchSignInUp(){
-				if(document.getElementById("div-su").style.display === "none"){
-					document.getElementById("div-su").style.display = "block"
-					document.getElementById("div-si").style.display = "none";
-				}else if(document.getElementById("div-si").style.display === "none"){
-					document.getElementById("div-si").style.display = "block";
-					document.getElementById("div-su").style.display = "none";
-				}
+			function showChangePassword(){
+				document.getElementById("div-cp").style.display = "block";
+				document.getElementById("div-su").style.display = "none";
+				document.getElementById("div-si").style.display = "none";
+
+			}
+			function showSignIn(){
+				document.getElementById("div-cp").style.display = "none";
+				document.getElementById("div-su").style.display = "none";
+				document.getElementById("div-si").style.display = "block";
+			}
+			function showSignUp(){
+				document.getElementById("div-cp").style.display = "none";
+				document.getElementById("div-su").style.display = "block";
+				document.getElementById("div-si").style.display = "none";
 			}
 
 			function changeOrigin(newOrigin) {
