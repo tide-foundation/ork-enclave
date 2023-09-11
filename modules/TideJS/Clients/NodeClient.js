@@ -19,7 +19,7 @@ import Point from "../Ed25519/point.js"
 import GenShardResponse from "../Models/GenShardResponse.js";
 import ClientBase from "./ClientBase.js"
 import SendShardResponse from "../Models/SendShardResponse.js";
-import ConvertResponse from "../Models/ConvertResponse.js";
+import PrismConvertResponse from "../Models/PrismConvertResponse.js"
 
 export default class NodeClient extends ClientBase {
     /**
@@ -36,35 +36,58 @@ export default class NodeClient extends ClientBase {
     }
 
     /**
-     * @param {Point} gBlurUser
      * @param {Point} gBlurPass
      * @param {string} uid 
-     * @param {boolean} test
-     * @returns {Promise<ConvertResponse>}
+     * @param {boolean} prismCommitted
+     * @returns {Promise<PrismConvertResponse>}
      */
-    async Convert(uid, gBlurUser, gBlurPass, test=false) {
+    async PrismConvert(uid, gBlurPass, prismCommitted=true) {
+        const data = this._createFormData({  
+            'gBlurPass': gBlurPass.toBase64(),
+            'prismCommitted': prismCommitted
+        })
+        const response = await this._post(`/Prism/Convert?uid=${uid}`, data)
+        const responseData = await this._handleError(response, "Convert Prism");
+        return PrismConvertResponse.from(responseData);
+    }
+
+    /**
+     * @param {string} uid 
+     * @param {Point} gBlurUser
+     * @param {Point} gBlurPass
+     * @param {boolean} cmkCommitted
+     * @param {boolean} prismCommitted
+     * @returns
+     */
+    async Convert(uid, gBlurUser, gBlurPass, cmkCommitted=true, prismCommitted=true) {
         const data = this._createFormData({ 
             'gBlurUser': gBlurUser.toBase64(), 
-            'gBlurPass': gBlurPass.toBase64(),
-            'test': test
+            'gBlurPass': gBlurPass.toBase64(), 
+            'cmkCommitted': cmkCommitted,
+            'prismCommitted': prismCommitted
         })
         const response = await this._post(`/CMK/Convert?uid=${uid}`, data)
         const responseData = await this._handleError(response, "Convert CMK/Prism");
-        return ConvertResponse.from(responseData);
+        return {
+            "CMKConvertResponse":  responseData.split("|")[0],
+            "PrismConvertResponse": PrismConvertResponse.from(responseData.split("|")[1])
+        }
     }
 
     /**
      * @param {string} decryptedChallenge
      * @param {string} encryptedAuthRequest
      * @param {string} uid 
-     * @param {boolean} test
+     * @param {boolean} cmkCommitted
+     * @param {boolean} prismCommitted
      * @returns {Promise<string>}
      */
-    async Authenticate(uid, decryptedChallenge, encryptedAuthRequest, test=false) {
+    async Authenticate(uid, decryptedChallenge, encryptedAuthRequest, cmkCommitted=true, prismCommitted=true) {
         const data = this._createFormData({ 
             'decryptedChallenge': decryptedChallenge, 
             'encAuthRequest': encryptedAuthRequest,
-            'test': test
+            'cmkCommitted': cmkCommitted,
+            'prismCommitted': prismCommitted
         })
         const response = await this._post(`/CMK/Authenticate?uid=${uid}`, data)
 
@@ -102,9 +125,9 @@ export default class NodeClient extends ClientBase {
      * @param {string} mode
      * @param {string} modelToSign
      * @param {Point} gR2
-     * @param {boolean} test
+     * @param {boolean} cvkCommitted
      */
-    async SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, li, gBlindH, mode="default", modelToSign=null, gR2=null, test=false){
+    async SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, li, gBlindH, mode="default", modelToSign=null, gR2=null, cvkCommitted=true){
         if(mode != "default" && (modelToSign == null || gR2 == null)) throw new Error("Model to sign expected");
         const data = this._createFormData({ 
             'jwt': jwt, 
@@ -117,7 +140,7 @@ export default class NodeClient extends ClientBase {
             'mode': mode,
             'modelToSign': modelToSign == null ? "" : modelToSign,
             'gR2': gR2 == null ? null : gR2.toBase64(),
-            'test': test
+            'cvkCommitted': cvkCommitted
         });
         const response = await this._post(`/CVK/SignIn?uid=${vuid}`, data)
         const encSigs = await this._handleError(response, "SignInCVK");
@@ -129,19 +152,43 @@ export default class NodeClient extends ClientBase {
      * @param {bigint[]} mIdORKij
      * @param {number} numKeys
      * @param {Point[]} gMultipliers
+     * @param {boolean} existingUser
      * @returns {Promise<GenShardResponse>}
      */
-    async GenShard(uid, mIdORKij, numKeys, gMultipliers) {
+    async GenShard(uid, mIdORKij, numKeys, gMultipliers, existingUser=false) {
         const data = this._createFormData(
             {
                 'mIdORKij': mIdORKij.map(n => n.toString()),
                 'numKeys': numKeys,
                 'gMultipliers': gMultipliers.map(p => p == null ? "" : p.toBase64()),
+                'existingUser': existingUser
             }
         );
         const response = await this._post(`/Create/GenShard?uid=${uid}`, data);
 
         const responseData = await this._handleError(response, "GenShard");
+        return GenShardResponse.from(responseData);
+    }
+
+    /**
+     * 
+     * @param {string} uid 
+     * @param {bigint[]} mIdORKij 
+     * @param {string} decryptedChallenge 
+     * @param {Point} gMultiplier
+     * @returns 
+     */
+    async UpdateShard(uid, mIdORKij, decryptedChallenge, gMultiplier){
+        const data = this._createFormData(
+            {
+                'mIdORKij': mIdORKij.map(n => n.toString()),
+                'gMultiplier': gMultiplier.toBase64(),
+                'decryptedChallengei': decryptedChallenge
+            }
+        );
+        const response = await this._post(`/Create/UpdateShard?uid=${uid}`, data);
+
+        const responseData = await this._handleError(response, "UpdateShard");
         return GenShardResponse.from(responseData);
     }
 

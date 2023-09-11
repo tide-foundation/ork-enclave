@@ -1,36 +1,33 @@
 <html>
     <script type="module">
-        import {SignUp, SignIn, SimClient, TideJWT, EdDSA, Point, Utils} from "/modules/TideJS/index.js";
+        import {SignUp, SignIn, ChangePassword, SimClient, TideJWT, EdDSA, Point, Utils} from "/modules/TideJS/index.js";
         
-        var cmkOrks = [["2527689245118197790113231778399786267654070552711339962487622855626901589953", "http://host.docker.internal:1001", Point.fromB64("WGZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmY=")], ["6393847925575234000169843195548208585270417612196919584745964877580038090425", "http://host.docker.internal:1003", Point.fromB64("1LT1eEhowwIEAyRnF+wWn/eeJmCOoSahq2nud9GxZxI=")], ["4632947133711470616417116433625114571768440046220722468064461787170709195526", "http://host.docker.internal:1002", Point.fromB64("yaP4aq5GXw5WUThkUQ85l1YfosnoXqIdwikjCfPNYCI=")]];
+        // Sign Up
+        var cmkOrks = [["2527689245118197790113231778399786267654070552711339962487622855626901589953", "http://host.docker.internal:1001", Point.fromB64("WGZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmY=")], ["6393847925575234000169843195548208585270417612196919584745964877580038090425", "http://host.docker.internal:1003", Point.fromB64("1LT1eEhowwIEAyRnF+wWn/eeJmCOoSahq2nud9GxZxI=")], ["4632947133711470616417116433625114571768440046220722468064461787170709195526", "http://host.docker.internal:1002", Point.fromB64("yaP4aq5GXw5WUThkUQ85l1YfosnoXqIdwikjCfPNYCI=")], ["1236192107091201142435240383373704537094513494254495780082080673750870608619", "http://host.docker.internal:1004", Point.fromB64("LxEyymGrON/wDy/qMijyTGxx1YCFuA5H4ZUVyyfo0Ec=")], ["1688896922719992198562411318292378855138814747620597373779036533530118166363", "http://host.docker.internal:1005", Point.fromB64("7ch21oMf0hBdC0OJyi4oMWZGkokUbizgb67+mLIlSN8=")]];
         var cvkOrks = cmkOrks;
-        var simUrl = "http://host.docker.internal:2000/"
         var config = {
             cmkOrkInfo: cmkOrks,
             cvkOrkInfo: cvkOrks,
-            simulatorUrl: simUrl
         }
         var su = new SignUp(config);
         var user = Date.now().toString();
         var gVVK = "WGZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmY=";
-        var jwt1 = await su.start(user, "pass", gVVK);
-        console.log(jwt1);
+        await su.start(user, "a", gVVK);
+        var jwt1 = await su.continue();
+        console.log("Sign up good " + jwt1);
+ 
+        // Change Password
+        await ChangePassword.start(user, "a", "b", gVVK);
+        console.log("Change password good")
 
+        // Sign In
         var newConfig = {
-            simulatorUrl: simUrl,
-            mode: "openssh",
-            modelToSign: "AAAAID1C/N5kHqrnQa1iJMJxFDcRxp4nRudRKgExusQccp86MgAAAAR1c2VyAAAADnNzaC1jb25uZWN0aW9uAAAACXB1YmxpY2tleQEAAAALc3NoLWVkMjU1MTkAAAAzAAAAC3NzaC1lZDI1NTE5AAAAIJ67ux4/TCLHWNCA1+TxiW7rOaLAxbtyDKK4Sscu4aFB"
+            mode: "default"
         }
         var si = new SignIn(newConfig);
-        var {jwt, modelSig} = await si.start(user, "pass", gVVK);
-        console.log(jwt);
+        await si.start(user, "b", gVVK);
+        var jwt = await si.continue();
+        console.log("Sign in good " + jwt);
 
-        
-        var simC = new SimClient("http://host.docker.internal:2000/");
-        var pub = await simC.GetKeyPublic(TideJWT.getUID(jwt));
-        console.log(pub.toBase64())
-        var valid = await EdDSA.verify(modelSig, pub, Utils.base64ToBytes(newConfig.modelToSign));
-        console.log(valid);
-        
     </script>
 </html>
