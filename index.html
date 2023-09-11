@@ -57,12 +57,15 @@
 						<div class="loading" id ="loader" style="display:none"></div>
 	
 						<div class="text-center p-t-90">
-							<u class="txt1" onclick="switchSignInUp()">
-								New user? Create account
+							<u class="txt1" onclick="showSignUp()">
+								Create account
 							</u>
 							<span>
 								<u class="txt1 p-l-20" onclick="rehome()">
-									Don't trust this node? Change node
+									Change node
+								</u>
+								<u class="txt1 p-l-20" onclick="showChangePassword()">
+									Forgot password
 								</u>
 							</span>
 						</div>
@@ -116,19 +119,19 @@
 						<div class="loading" id ="loader-su" style="display:none"></div>
 	
 						<div class="text-center p-t-30">
-							<u class="txt1" onclick="switchSignInUp()">
+							<u class="txt1" onclick="showSignIn()">
 								Already a user? Sign in
 							</u>
 							<span>
 								<u class="txt1 p-l-20" onclick="rehome()">
-									Customize ORK nodes
+									Change node
 								</u>
 							</span>
 						</div>
 					</form>
 				</div>
 				<!--Change Password-->
-				<div style="display: block;" id="div-cp" class="wrap-enclave">
+				<div style="display: none;" id="div-cp" class="wrap-enclave">
 					<form class="enclave-form validate-form-cp">
 						<span class="enclave-form-logo">
 							<img class="s_links" src="images/logo.png">
@@ -159,7 +162,7 @@
 						<div class="loading" id ="loader-cp" style="display:none"></div>
 
 						<div class="text-center p-t-50">
-							<u class="txt1" onclick="switchSignInUp()">
+							<u class="txt1" onclick="showSignIn()">
 								Sign in instead?
 							</u>
 						</div>
@@ -167,7 +170,7 @@
 				</div>
 
 				<!--Forgot Password-->
-				<div style="display: block;" id="div-fp" class="wrap-enclave">
+				<div style="display: none;" id="div-fp" class="wrap-enclave">
 					<form class="enclave-form validate-form-fp">
 						<span class="enclave-form-logo">
 							<img class="s_links" src="images/logo.png">
@@ -192,7 +195,7 @@
 						<div class="loading" id ="loader-cp" style="display:none"></div>
 
 						<div class="text-center p-t-50">
-							<u class="txt1" onclick="switchSignInUp()">
+							<u class="txt1" onclick="showSignIn()">
 								Remember your password? Sign in
 							</u>
 						</div>
@@ -217,16 +220,21 @@
 				document.getElementById("div-su").style.display = "none";
 			});
 	
-			
-	
-			function switchSignInUp(){
-				if(document.getElementById("div-su").style.display === "none"){
-					document.getElementById("div-su").style.display = "block"
-					document.getElementById("div-si").style.display = "none";
-				}else if(document.getElementById("div-si").style.display === "none"){
-					document.getElementById("div-si").style.display = "block";
-					document.getElementById("div-su").style.display = "none";
-				}
+			function showChangePassword(){
+				document.getElementById("div-cp").style.display = "block";
+				document.getElementById("div-su").style.display = "none";
+				document.getElementById("div-si").style.display = "none";
+
+			}
+			function showSignIn(){
+				document.getElementById("div-cp").style.display = "none";
+				document.getElementById("div-su").style.display = "none";
+				document.getElementById("div-si").style.display = "block";
+			}
+			function showSignUp(){
+				document.getElementById("div-cp").style.display = "none";
+				document.getElementById("div-su").style.display = "block";
+				document.getElementById("div-si").style.display = "none";
 			}
 
 			function changeOrigin(newOrigin) {
