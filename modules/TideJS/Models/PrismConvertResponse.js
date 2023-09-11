@@ -17,14 +17,14 @@
 
 import Point from "../Ed25519/point.js";
 
-export default class ConvertResponse{
+export default class PrismConvertResponse{
     /** 
-     * @param {string} EncryptedData
+     * @param {string} EncChallengei
      * @param {Point} GBlurPassPRISMi
      * @param {bigint} Timestampi 
      */
-    constructor(EncryptedData, GBlurPassPRISMi, Timestampi){
-        this.EncryptedData = EncryptedData
+    constructor(EncChallengei, GBlurPassPRISMi, Timestampi){
+        this.EncChallengei = EncChallengei
         this.GBlurPassPRISMi = GBlurPassPRISMi
         this.Timestampi = Timestampi
     }
@@ -32,6 +32,6 @@ export default class ConvertResponse{
         const obj = JSON.parse(data);
         const timestampi = BigInt(obj.Timestampi);
         const gBlurPassPRISMi = Point.fromB64(obj.GBlurPassPrism)
-        return new ConvertResponse(obj.EncryptedData, gBlurPassPRISMi, timestampi);
+        return new PrismConvertResponse(obj.EncChallengei, gBlurPassPRISMi, timestampi);
     }
 }

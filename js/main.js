@@ -15,7 +15,7 @@
 // If not, see https://tide.org/licenses_tcoc2-0-0-en
 //
 
-import { SignIn, SimulatorFlow, SignUp, EdDSA, Point } from "../modules/TideJS/index.js";
+import { SignIn, ChangePassword, SimulatorFlow, SignUp, EdDSA, Point } from "../modules/TideJS/index.js";
 
 var activeOrks = [];
 
@@ -154,7 +154,6 @@ var activeOrks = [];
         const modelToSign = params.get("modelToSign") == "" ? null : params.get("modelToSign");
 
         var config = {
-            simulatorUrl: 'https://prod-simulator.azurewebsites.net/',
             mode: mode,
             modelToSign: modelToSign
         } 
@@ -216,8 +215,7 @@ var activeOrks = [];
 
         var config = {
             cmkOrkInfo: cmkOrkInfo,
-            cvkOrkInfo: cvkOrkInfo,
-            simulatorUrl: 'https://prod-simulator.azurewebsites.net/'
+            cvkOrkInfo: cvkOrkInfo
         }
         const signup = new SignUp(config);
         try{
@@ -258,6 +256,24 @@ var activeOrks = [];
         
     }
 
+    /*
+    async function changePassword(username, oldPassword, newPassword){
+        //$('#loader-su').show(); create new loader
+
+        try{
+            await ChangePassword.start(username, oldPassword, newPassword);
+            // go back to sign In page
+        }catch(e){
+            $('#alert-su').text(e);
+            $('#alert-su').show();
+            $('#submit-btn-su').prop('disabled', false);
+            $('#loader-su').hide();
+        }
+
+
+    }
+    test basic function first
+*/
     
 })(jQuery);
 

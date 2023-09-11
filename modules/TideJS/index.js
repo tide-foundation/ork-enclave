@@ -22,6 +22,7 @@ export { default as SimClient } from './Clients/SimulatorClient.js'
 export { default as SimulatorFlow } from './Flow/SimulatorFlow.js';
 export { default as SignUp } from './Functions/SignUp.js';
 export { default as SignIn } from './Functions/SignIn.js';
+export { default as ChangePassword } from './Functions/ChangePassword.js'
 export { default as TideJWT } from "./ModelsToSign/TideJWT.js"
 
 import * as Utils from './Tools/Utils.js';
