@@ -72,7 +72,7 @@ var activeOrks = [];
                 check=false;
             }
         }  
-        if (input[1].value != input[2].value) {
+        if (input[2].value != input[3].value) {
             check = false;
             showValidate(input[2]);
         }
@@ -284,7 +284,7 @@ var activeOrks = [];
         $('#loader-cp').show();
 
         try{
-            await ChangePassword.start(username, oldPassword, newPassword);
+            await ChangePassword.start(username, oldPassword, newPassword, params.get("vendorPublic"));
             $('#loader-cp').hide();
             // go back to sign In page
             showSignIn(); // function on index.html script
