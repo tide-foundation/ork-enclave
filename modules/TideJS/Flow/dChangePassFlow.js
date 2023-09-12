@@ -73,10 +73,14 @@ export default class dChangePassFlow{
      * @param {Point} cvkPub 
      * @returns 
      */
-    async Test(uid, gUser, gNewPass, gVVK, cmkPub, cvkPub=null){
+    async StartTest(uid, gUser, gNewPass, gVVK, cmkPub, cvkPub=null,){
         const testSignIn = new TestSignIn(this.cmkOrkInfo, undefined, true, true, false);
-        const {jwt} = await testSignIn.start(uid, gUser, gNewPass, gVVK, cmkPub, cvkPub);
-        return jwt;
+        this.testSignInFlow = testSignIn;
+        return await testSignIn.start(uid, gUser, gNewPass, gVVK, cmkPub, cvkPub);
+    }
+    async ConintueTest(mode="default", modelToSign=null){
+        if(this.testSignInFlow == undefined) throw Error('Test sign in flow does not exist');
+        return await this.testSignInFlow.continue(mode, modelToSign);
     }
     async CommitPrism(uid){
         if(this.savedState == undefined) throw Error("No saved state")

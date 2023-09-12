@@ -8,13 +8,18 @@ import { Bytes2Hex } from "../Tools/Utils.js";
 import { SHA256_Digest } from "../Tools/Hash.js";
 
 export default class ChangePassword{
+
+    constructor(){
+        this.savedState = undefined;
+    }
+
     /**
      * @param {string} username 
      * @param {string} oldPassword 
      * @param {string} newPassword 
      * @param {string} gVVK
      */
-    static async start(username, oldPassword, newPassword, gVVK){
+    async start(username, oldPassword, newPassword, gVVK){
         const r1 = RandomBigInt();
         const r2 = RandomBigInt();
         //hash username
@@ -39,7 +44,20 @@ export default class ChangePassword{
         const changePassFlow = new dChangePassFlow(cmkOrkInfo);
         const decryptedChallenges = await changePassFlow.Authenticate(uid, gBlurPass, r1);
         await changePassFlow.ChangePrism(uid, gBlurNewPass, r2, decryptedChallenges);
-        await changePassFlow.Test(uid, gUser, gNewPass, gVVK, cmkPub);
-        await changePassFlow.CommitPrism(uid);
+        const resp = await changePassFlow.StartTest(uid, gUser, gNewPass, gVVK, cmkPub);
+
+        this.savedState = {
+            uid: uid,
+            changePassFlow: changePassFlow
+        }
+
+        return resp;
+    }
+
+    async continue(mode="default", modelToSign=null){
+        if(this.savedState == undefined) throw Error("No saved state exists");
+        const resp = await this.savedState.changePassFlow.ConintueTest(mode, modelToSign);
+        await this.savedState.changePassFlow.CommitPrism(this.savedState.uid);
+        return resp;
     }
 }

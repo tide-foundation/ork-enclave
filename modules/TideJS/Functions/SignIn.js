@@ -31,7 +31,6 @@ export default class SignIn {
      * Config should include key/value pairs of: 
      * @example
      * {
-     *  simulatorUrl: string
      *  mode: string // what type of service are you signing up to (e.g. an OpenSSH server - "openssh"). If you aren't sure, don't include this field or set it to "default"
      *  modelToSign: string // string representation of what you want to sign in this process. TODO: Clarify to user how this process works
      * }
@@ -181,10 +180,12 @@ export default class SignIn {
 
     async commitCVK(modelToSign_p=null){
         if(!this.savedState.VUID) throw Error("No VUID available in saved state"); // use this to determine not only if savedState exists, but also for VUID (from createCVK process)
+        if(modelToSign_p == null && this.modelToSign == null) this.mode = "default"; // revert mode to default if no model to sign provided
 
         const testSignIn = new TestSignIn(this.savedState.cmkOrkInfo, this.savedState.cmkOrkInfo, true, false, true); // send cmkOrkInfo twice as there is no vendor selection of CVK orks yet
-        const {jwt, modelSig} = await testSignIn.start(this.savedState.uid, this.savedState.gUser, this.savedState.gPass, this.savedState.gVVK,
+        await testSignIn.start(this.savedState.uid, this.savedState.gUser, this.savedState.gPass, this.savedState.gVVK,
             this.savedState.cmkPub, this.savedState.cvkPub, modelToSign_p);
+        const {jwt, modelSig} = testSignIn.continue(this.mode, modelToSign_p);
         
         // test dDecrypt() ?
 

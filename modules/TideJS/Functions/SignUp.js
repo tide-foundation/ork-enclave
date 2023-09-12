@@ -127,8 +127,8 @@ export default class SignUp {
 
         // Test sign in
         const testSignIn = new TestSignIn(this.cmkOrkInfo, this.cvkOrkInfo, false, false, false);
-        const {jwt, modelSig} = await testSignIn.start(this.savedState.uid, this.savedState.gUser, this.savedState.gPass, this.savedState.gVVK, this.savedState.cmkPub, this.savedState.cvkPub, modelToSign)
-        
+        await testSignIn.start(this.savedState.uid, this.savedState.gUser, this.savedState.gPass, this.savedState.gVVK, this.savedState.cmkPub, this.savedState.cvkPub)
+        const {jwt, modelSig} = await testSignIn.continue(this.mode, modelToSign);
         // Test dDecrypt
         if(this.mode == "default"){
             // implement flag for which tests we want to run in new account

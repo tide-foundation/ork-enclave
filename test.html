@@ -17,7 +17,9 @@
         console.log("Sign up good " + jwt1);
  
         // Change Password
-        await ChangePassword.start(user, "a", "b", gVVK);
+        var cp = new ChangePassword();
+        await cp.start(user, "a", "b", gVVK);
+        await cp.continue();
         console.log("Change password good")
 
         // Sign In

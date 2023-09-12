@@ -12,6 +12,8 @@ export default class TestSignIn{
         this.cmkCommitted = cmkCommitted
         this.cvkCommitted = cvkCommitted
         this.prismCommitted = prismCommitted
+
+        this.savedState = undefined;
     }
 
     /**
@@ -24,10 +26,7 @@ export default class TestSignIn{
      * @param {string} modelToSign
      * @returns 
      */
-    async start(uid, gUser, gPass, gVVK, cmkPub, cvkPub=null, modelToSign_p=null){
-        const modelRequested = (this.modelToSign == null && modelToSign_p == null) ? false : true;
-        const modelToSign = this.modelToSign == null ? modelToSign_p : this.modelToSign; // figure out which one is the not null, if both are null, it will still be null
-
+    async start(uid, gUser, gPass, gVVK, cmkPub, cvkPub=null){
         const startTime = BigInt(Math.floor(Date.now() / 1000));
         const r1 = RandomBigInt();
         const r2 = RandomBigInt();
@@ -38,14 +37,41 @@ export default class TestSignIn{
 
         const authFlow = new dKeyAuthenticationFlow(this.cmkOrkInfo, this.cmkCommitted, this.cvkCommitted, this.prismCommitted);
         const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK);
-        
-        authFlow.CVKorks = this.cvkOrkInfo == undefined ? await new SimulatorClient().GetUserORKs(uid) : this.cvkOrkInfo;
-        const authData = await authFlow.Authenticate_and_PreSignInCVK(uid, convertData.VUID, convertData.decChallengei, convertData.encAuthRequests, convertData.gSessKeyPub, convertData.data_for_PreSignInCVK, modelRequested);
 
         const gCVK = cvkPub == null ? await new SimulatorClient().GetKeyPublic(convertData.VUID) : cvkPub;
-        const resp = await authFlow.SignInCVK(convertData.VUID, convertData.jwt, authData.vlis, convertData.timestamp2, convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, this.mode, modelToSign, authData.model_gR);
-        if(!(await TideJWT.verify(resp.jwt, gCVK))) throw Error("Test sign in failed");
-        return resp;
+
+        this.savedState = {
+            uid: uid,
+            convertData: convertData,
+            gCVK: gCVK,
+            authFlow: authFlow
+        }
+
+        return {
+            ok: true,
+            dataType: "userData",
+            newAccount: !this.cvkCommitted, // if cvk is NOT committed, it IS a new account
+            publicKey: gCVK.toBase64(),
+            uid: convertData.VUID
+        };
+    }
+
+    async continue(mode="default", modelToSign=null){
+        if(this.savedState == undefined) throw Error("No saved state");
+
+        this.savedState.authFlow.CVKorks = this.cvkOrkInfo == undefined ? await new SimulatorClient().GetUserORKs(this.savedState.convertData.VUID) : this.cvkOrkInfo;
+        const authData = await this.savedState.authFlow.Authenticate_and_PreSignInCVK(this.savedState.uid, this.savedState.convertData.VUID, this.savedState.convertData.decChallengei, 
+            this.savedState.convertData.encAuthRequests, this.savedState.convertData.gSessKeyPub, this.savedState.convertData.data_for_PreSignInCVK, (modelToSign != null));
+
+        const resp = await this.savedState.authFlow.SignInCVK(this.savedState.convertData.VUID, this.savedState.convertData.jwt, authData.vlis, this.savedState.convertData.timestamp2, 
+            this.savedState.convertData.data_for_PreSignInCVK.gRMul, authData.gCVKR, authData.S, authData.ECDHi, authData.gBlindH, mode, modelToSign, authData.model_gR);
+        if(!(await TideJWT.verify(resp.jwt, this.savedState.gCVK))) throw Error("Test sign in failed");
+        return {
+            ok: true,
+            dataType: "completed",
+            TideJWT: resp.jwt, 
+            modelSig: resp.modelSig
+        };
     }
 }
 
