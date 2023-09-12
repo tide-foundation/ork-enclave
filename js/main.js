@@ -282,11 +282,10 @@ var activeOrks = [];
 
     async function changePassword(username, oldPassword, newPassword){
         $('#loader-cp').show();
-
+        const params = new URLSearchParams(window.location.search);
         try{
             if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
 
-            const params = new URLSearchParams(window.location.search);
             const mode = params.get("mode");
             const modelToSign = params.get("modelToSign") == "" ? null : params.get("modelToSign");
 
