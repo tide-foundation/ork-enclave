@@ -297,7 +297,7 @@ var activeOrks = [];
                 resp = await changePassword.continue(mode, modelToSign);
             }else{
                 const userData = await changePassword.start(username, oldPassword, newPassword, params.get("vendorPublic"));
-                const pre_model = waitForSignal();
+                const pre_model = waitForSignal(new URL(params.get("vendorUrl")).origin);
                 window.opener.postMessage(userData, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
                 const model = await pre_model; // model to sign from page calling the enclave
                 if(model === "VENDOR ERROR: Close Tide Enlcave") window.self.close(); // in case of vendor error
@@ -313,11 +313,11 @@ var activeOrks = [];
         }
     }
 
-    function waitForSignal(){
+    function waitForSignal(origin){
         return new Promise((resolve) => {
             const handler = (event) =>{
                 window.removeEventListener("message", handler);
-                if(event.origin == new URL(params.get("vendorUrl")).origin) resolve(event.data); // resolve promise when window listener has recieved msg
+                if(event.origin == origin) resolve(event.data); // resolve promise when window listener has recieved msg
             }
             window.addEventListener("message", handler, false);
         });
