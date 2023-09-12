@@ -284,17 +284,44 @@ var activeOrks = [];
         $('#loader-cp').show();
 
         try{
+            if(!(await EdDSA.verify(params.get("vendorUrlSig"), params.get("vendorPublic"), params.get("vendorUrl")))) throw Error("Vendor URL sig is invalid")
+
             const params = new URLSearchParams(window.location.search);
-            await ChangePassword.start(username, oldPassword, newPassword, params.get("vendorPublic"));
-            $('#loader-cp').hide();
-            // go back to sign In page
-            showSignIn(); // function on index.html script
+            const mode = params.get("mode");
+            const modelToSign = params.get("modelToSign") == "" ? null : params.get("modelToSign");
+
+            const changePassword = new ChangePassword();
+            let resp;
+            if(mode == "default" || modelToSign != null){
+                // default mode (no model to sign) or model to sign already exists
+                await changePassword.start(username, oldPassword, newPassword, params.get("vendorPublic"));
+                resp = await changePassword.continue(mode, modelToSign);
+            }else{
+                const userData = await changePassword.start(username, oldPassword, newPassword, params.get("vendorPublic"));
+                const pre_model = waitForSignal();
+                window.opener.postMessage(userData, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
+                const model = await pre_model; // model to sign from page calling the enclave
+                if(model === "VENDOR ERROR: Close Tide Enlcave") window.self.close(); // in case of vendor error
+                resp = await changePassword.continue(mode, modelToSign);
+            }
+            window.opener.postMessage(resp, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
+            window.self.close();
         }catch(e){
             $('#alert-cp').text(e);
             $('#alert-cp').show();
             $('#submit-btn-cp').prop('disabled', false);
             $('#loader-cp').hide();
         }
+    }
+
+    function waitForSignal(){
+        return new Promise((resolve) => {
+            const handler = (event) =>{
+                window.removeEventListener("message", handler);
+                if(event.origin == new URL(params.get("vendorUrl")).origin) resolve(event.data); // resolve promise when window listener has recieved msg
+            }
+            window.addEventListener("message", handler, false);
+        });
     }
 
     
