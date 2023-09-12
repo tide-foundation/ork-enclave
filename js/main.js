@@ -301,7 +301,7 @@ var activeOrks = [];
                 window.opener.postMessage(userData, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
                 const model = await pre_model; // model to sign from page calling the enclave
                 if(model === "VENDOR ERROR: Close Tide Enlcave") window.self.close(); // in case of vendor error
-                resp = await changePassword.continue(mode, modelToSign);
+                resp = await changePassword.continue(mode, model);
             }
             window.opener.postMessage(resp, params.get("vendorUrl")); // post jwt to vendor window which opened this enclave
             window.self.close();
