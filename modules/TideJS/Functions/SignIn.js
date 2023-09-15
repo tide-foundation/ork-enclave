@@ -25,6 +25,8 @@ import dKeyAuthenticationFlow from "../Flow/dKeyAuthenticationFlow.js"
 import dKeyGenerationFlow from "../Flow/dKeyGenerationFlow.js"
 import HashToPoint from "../Tools/H2P.js"
 import TestSignIn from "./TestSignIn.js"
+import KeyInfo from "../Models/KeyInfo.js"
+import OrkInfo from "../Models/OrkInfo.js"
 
 export default class SignIn {
     /**
@@ -72,8 +74,7 @@ export default class SignIn {
 
         // Putting this up here to speed things up using await
         const simClient = new SimulatorClient();
-        const pre_orkInfo = simClient.GetUserORKs(uid);
-        const pre_cmkPub = simClient.GetKeyPublic(uid);
+        const pre_keyInfo = simClient.GetKeyInfo(uid);
 
         const gUser = await HashToPoint(username.toLowerCase() + gVVK);
         const gBlurUser = gUser.times(r2);
@@ -81,16 +82,15 @@ export default class SignIn {
         const gPass = await HashToPoint(password);
         const gBlurPass = gPass.times(r1);
 
-        // get ork urls
-        const cmkOrkInfo = await pre_orkInfo;
-        const cmkPub = await pre_cmkPub;
+        // get key info
+        const cmkInfo = await pre_keyInfo;
 
-        const authFlow = new dKeyAuthenticationFlow(cmkOrkInfo, true, true, true);
-        const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkPub, gVVK);
+        const authFlow = new dKeyAuthenticationFlow(cmkInfo.orkInfo, true, true, true);
+        const convertData = await authFlow.Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, cmkInfo.keyPublic, gVVK);
 
-        let cvkPub;
+        let cvkInfo;
         try{
-            cvkPub = await simClient.GetKeyPublic(convertData.VUID);
+            cvkInfo = await simClient.GetKeyInfo(convertData.VUID);
             this.cvkExists = true;
         }catch{
             // key for VUID was not found
@@ -103,20 +103,23 @@ export default class SignIn {
             this.savedState.gVVK = gVVK;
             this.savedState.gUser = gUser;
             this.savedState.gPass = gPass;
-            this.savedState.cmkOrkInfo = cmkOrkInfo;
-            this.savedState.cmkPub = cmkPub;
-            return await this.createCVK(convertData.VUID, convertData.data_for_PreSignInCVK.gCMKAuth, cmkOrkInfo); // cvk orks are the same as cmk orks for now HERE
+            this.savedState.cmkOrkInfo = cmkInfo.orkInfo;
+            this.savedState.cmkPub = cmkInfo.keyPublic;
+            return await this.createCVK(convertData.VUID, convertData.data_for_PreSignInCVK.gCMKAuth, cmkInfo.orkInfo); // cvk orks are the same as cmk orks for now HERE
         }
 
-        this.savedState.authFlow = authFlow;
-        this.savedState.convertData = convertData;
-        this.savedState.uid = uid;
+        this.savedState = {
+            authFlow: authFlow,
+            convertData: convertData,
+            uid: uid,
+            cvkInfo: cvkInfo
+        }
 
         return {
             ok: true,
             dataType: "userData",
             newAccount: false,
-            publicKey: cvkPub.toBase64(),
+            publicKey: cvkInfo.keyPublic.toBase64(),
             uid: convertData.VUID
         };
     }
@@ -132,7 +135,7 @@ export default class SignIn {
      * CMK exists for this user but no CVK for this vendor. Let's create one.
      * @param {string} VUID 
      * @param {Point} gCMKAuth
-     * @param {[string, string, Point][]} cvkOrkInfo 
+     * @param {OrkInfo[]} cvkOrkInfo 
      */
     async createCVK(VUID, gCMKAuth, cvkOrkInfo){
         const cvkGenFlow = new dKeyGenerationFlow(cvkOrkInfo);
@@ -159,10 +162,7 @@ export default class SignIn {
         const modelRequested = (this.modelToSign == null && modelToSign_p == null) ? false : true;
         const modelToSign = this.modelToSign == null ? modelToSign_p : this.modelToSign; // figure out which one is the not null, if both are null, it will still be null
 
-        const simClient = new SimulatorClient();
-
-        const vOrks = await simClient.GetUserORKs(this.savedState.convertData.VUID);
-        this.savedState.authFlow.CVKorks = vOrks;
+        this.savedState.authFlow.CVKorks = this.savedState.cvkInfo.orkInfo;
         const authData = await this.savedState.authFlow.Authenticate_and_PreSignInCVK(this.savedState.uid, this.savedState.convertData.VUID, this.savedState.convertData.decChallengei, 
             this.savedState.convertData.encAuthRequests, this.savedState.convertData.gSessKeyPub, this.savedState.convertData.data_for_PreSignInCVK, modelRequested);
 

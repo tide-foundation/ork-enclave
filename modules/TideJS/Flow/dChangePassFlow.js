@@ -7,18 +7,19 @@ import dKeyGenerationFlow from "./dKeyGenerationFlow.js";
 import { mod_inv, BigIntFromByteArray } from "../Tools/Utils.js";
 import { SHA256_Digest } from "../Tools/Hash.js";
 import TestSignIn from "../Functions/TestSignIn.js";
+import OrkInfo from "../Models/OrkInfo.js";
 
 export default class dChangePassFlow{
     /**
      * 
-     * @param {[string, string, Point][]} cmkOrkInfo // everything about CMK orks of this user - orkID, orkURL, orkPublic 
+     * @param {OrkInfo[]} cmkOrkInfo // everything about CMK orks of this user - orkID, orkURL, orkPublic 
      */
     constructor(cmkOrkInfo){
         this.cmkOrkInfo = cmkOrkInfo;
         this.savedState = undefined;
     }
     async Authenticate(uid, gBlurPass, r1){
-        const clients = this.cmkOrkInfo.map(ork => new NodeClient(ork[1])) // create node clients
+        const clients = this.cmkOrkInfo.map(ork => new NodeClient(ork.orkURL)) // create node clients
 
         // Here we also find out which ORKs are up
         const pre_ConvertResponses = clients.map(client => client.PrismConvert(uid, gBlurPass, true));
@@ -35,14 +36,14 @@ export default class dChangePassFlow{
         this.cmkOrkInfo = activeOrks;
 
         // Generate lis for CMKOrks based on the ones that replied
-        const ids = this.cmkOrkInfo.map(ork => BigInt(ork[0])); // create lis for all orks that responded
+        const ids = this.cmkOrkInfo.map(ork => BigInt(ork.orkID)); // create lis for all orks that responded
         const lis = ids.map(id => GetLi(id, ids, Point.order));
 
         /**@type {PrismConvertResponse[]} */
         // @ts-ignore
         const PrismConvertResponses = settledPromises.filter(promise => promise.status === "fulfilled").map(promise => promise.value); // .value will exist here as we have filtered the responses above
         
-        return await GetDecryptedChallenge(PrismConvertResponses, lis, this.cmkOrkInfo.map(c => c[2]), r1);
+        return await GetDecryptedChallenge(PrismConvertResponses, lis, this.cmkOrkInfo.map(c => c.orkPublic), r1);
     }
     /**
      * @param {string} uid 

@@ -24,29 +24,20 @@ import TideJWT from "../ModelsToSign/TideJWT.js"
 import dDecryptionTestFlow from "../Flow/dDecryptionTestFlow.js"
 import HashToPoint from "../Tools/H2P.js"
 import TestSignIn from "./TestSignIn.js"
+import OrkInfo from "../Models/OrkInfo.js"
 
 export default class SignUp {
-    /**
-     * Config should include key/value pairs of: 
-     * @example
-     * {
-     *  cmkOrkInfo: [string, string Point][]
-     *  cvkOrkInfo: [string, string Point][]
-     *  simulatorUrl: string  
-     * }
-     * @example
-     * @param {object} config 
-     */
+
     constructor(config) {
         if (!Object.hasOwn(config, 'cmkOrkInfo')) { throw Error("CMK OrkInfo has not been included in config") }
         if (!Object.hasOwn(config, 'cvkOrkInfo')) { throw Error("CVK OrkInfo has not been included in config") }
 
         /**
-         * @type {[string, string, Point][]}
+         * @type {OrkInfo[]}
          */
         this.cmkOrkInfo = config.cmkOrkInfo
         /**
-         * @type {[string, string, Point][]}
+         * @type {OrkInfo[]}
          */
         this.cvkOrkInfo = config.cvkOrkInfo
         /**

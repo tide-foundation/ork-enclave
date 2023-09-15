@@ -6,6 +6,14 @@ import SimulatorClient from "../Clients/SimulatorClient.js";
 
 
 export default class TestSignIn{
+    /**
+     * 
+     * @param {OrkInfo[]} cmkOrkInfo 
+     * @param {OrkInfo[]} cvkOrkInfo 
+     * @param {boolean} cmkCommitted 
+     * @param {boolean} cvkCommitted 
+     * @param {boolean} prismCommitted 
+     */
     constructor(cmkOrkInfo, cvkOrkInfo, cmkCommitted, cvkCommitted, prismCommitted){
         this.cmkOrkInfo = cmkOrkInfo
         this.cvkOrkInfo = cvkOrkInfo // will change in future when vendor wants specific orks in new cvk rego

@@ -20,19 +20,24 @@ import Point from "../Ed25519/point.js";
 import { CmkConvertReply, PreSignInCVKReply, PrismConvertReply, SignInCVKReply } from "../Math/KeyAuthentication.js";
 import { GetLi } from "../Math/SecretShare.js";
 import PrismConvertResponse from "../Models/PrismConvertResponse.js";
+import OrkInfo from "../Models/OrkInfo.js";
 
 export default class dKeyAuthenticationFlow{
     /**
-     * @param {[string, string, Point][]} CMKorks 
+     * @param {OrkInfo[]} CMKorks 
      * @param {boolean} cmkCommitted
      * @param {boolean} cvkCommitted
      * @param {boolean} prismCommitted
      */
     constructor(CMKorks, cmkCommitted, cvkCommitted, prismCommitted) {
         /**
-         * @type {[string, string, Point][]}  // everything about CMK orks of this user - orkID, orkURL, orkPublic
+         * @type {OrkInfo[]}  // everything about CMK orks of this user - orkID, orkURL, orkPublic
          */
         this.CMKorks = CMKorks;
+        /**
+         * @type {OrkInfo[]}
+         */
+        this.CVKorks = CMKorks;
         this.threshold = 3;
         this.cmkCommitted = cmkCommitted
         this.cvkCommitted = cvkCommitted
@@ -51,7 +56,7 @@ export default class dKeyAuthenticationFlow{
      * @param {string} gVVK
      */
     async Convert(uid, gBlurUser, gBlurPass, r1, r2, startTime, gCMK, gVVK){
-        const clients = this.CMKorks.map(ork => new NodeClient(ork[1])) // create node clients
+        const clients = this.CMKorks.map(ork => new NodeClient(ork.orkURL)) // create node clients
 
         // Here we also find out which ORKs are up
         const pre_ConvertResponses = clients.map(client => client.Convert(uid, gBlurUser, gBlurPass, this.cmkCommitted, this.prismCommitted));
@@ -68,14 +73,14 @@ export default class dKeyAuthenticationFlow{
         this.CMKorks = activeOrks;
 
         // Generate lis for CMKOrks based on the ones that replied
-        const ids = this.CMKorks.map(ork => BigInt(ork[0])); // create lis for all orks that responded
+        const ids = this.CMKorks.map(ork => BigInt(ork.orkID)); // create lis for all orks that responded
         const lis = ids.map(id => GetLi(id, ids, Point.order));
 
         /**@type {{CMKConvertResponse: string, PrismConvertResponse: PrismConvertResponse}[]} */
         // @ts-ignore
         const ConvertResponses = settledPromises.filter(promise => promise.status === "fulfilled").map(promise => promise.value); // .value will exist here as we have filtered the responses above
         
-        const {prismAuthis, deltaTime} = await PrismConvertReply(ConvertResponses.map(c => c.PrismConvertResponse), lis, this.CMKorks.map(c => c[2]), r1, startTime);
+        const {prismAuthis, deltaTime} = await PrismConvertReply(ConvertResponses.map(c => c.PrismConvertResponse), lis, this.CMKorks.map(c => c.orkPublic), r1, startTime);
         return await CmkConvertReply(uid, ConvertResponses.map(c => c.CMKConvertResponse), ConvertResponses.map(c => c.PrismConvertResponse.EncChallengei), lis, prismAuthis, gCMK, r2, deltaTime, gVVK);
     }
 
@@ -90,9 +95,9 @@ export default class dKeyAuthenticationFlow{
      * @param {boolean} modelRequested
      */
     async Authenticate_and_PreSignInCVK(uid, vuid, decryptedChallengei, encryptedAuthRequest, gSessKeyPub, data_for_PreSignInCVK, modelRequested=false){
-        const cmkClients = this.CMKorks.map(ork => new NodeClient(ork[1]))
+        const cmkClients = this.CMKorks.map(ork => new NodeClient(ork.orkURL))
         // TODO: Once sim client ceases to exist, fill in this.CVKorks here by quering a cmkork
-        const cvkClients = this.CVKorks.map(ork => new NodeClient(ork[1]))
+        const cvkClients = this.CVKorks.map(ork => new NodeClient(ork.orkURL))
 
         const pre_encSig = cmkClients.map((client, i) => client.Authenticate(uid, decryptedChallengei[i], encryptedAuthRequest[i], this.cmkCommitted, this.prismCommitted))
         const pre_encGRData = cvkClients.map(client => client.PreSignInCVK(vuid, gSessKeyPub, modelRequested));
@@ -113,7 +118,7 @@ export default class dKeyAuthenticationFlow{
         this.CVKorks = activeOrks;
 
         // Generate lis for CVKOrks based on the ones that replied
-        const vids = this.CVKorks.map(ork => BigInt(ork[0])); 
+        const vids = this.CVKorks.map(ork => BigInt(ork.orkID)); 
         const vlis = vids.map(id => GetLi(id, vids, Point.order));
 
         /**@type {string[]} */
@@ -121,7 +126,7 @@ export default class dKeyAuthenticationFlow{
         const encGRData = settledPromises.filter(promise => promise.status === "fulfilled").map(promise => promise.value); // .value will exist here as we have filtered the responses above
       
         return {
-            ... await PreSignInCVKReply(encSig, encGRData, data_for_PreSignInCVK, this.CVKorks.map(o => o[2])),
+            ... await PreSignInCVKReply(encSig, encGRData, data_for_PreSignInCVK, this.CVKorks.map(o => o.orkPublic)),
             'vlis' : vlis
         };
     }
@@ -142,7 +147,7 @@ export default class dKeyAuthenticationFlow{
      * @param {Point} gR2
      */
     async SignInCVK(vuid, jwt, vlis, timestamp2, gRMul, gCVKR, S, ECDHi, gBlindH, mode="default", modelToSign=null, gR2=null){
-        const cvkClients = this.CVKorks.map(ork => new NodeClient(ork[1]))
+        const cvkClients = this.CVKorks.map(ork => new NodeClient(ork.orkURL))
 
         const pre_encSigs = cvkClients.map((client, i) => client.SignInCVK(vuid, jwt, timestamp2, gRMul, S, gCVKR, vlis[i], gBlindH, mode, modelToSign, gR2, this.cvkCommitted));
         const encSigs = await Promise.all(pre_encSigs);

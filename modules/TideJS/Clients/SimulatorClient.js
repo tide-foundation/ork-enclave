@@ -16,6 +16,7 @@
 //
 
 import Point from "../Ed25519/point.js"
+import KeyInfo from "../Models/KeyInfo.js";
 import ClientBase from "./ClientBase.js"
 import NodeClient from "./NodeClient.js";
 
@@ -79,4 +80,19 @@ export default class SimulatorClient extends ClientBase {
         return Point.fromB64(resp_obj.public);
     }
 
+    /**
+     * 
+     * @param {string} uid 
+     * @returns 
+     */
+    async GetKeyInfo(uid){
+        const response = await this._get(`/simulator/keyinfo/${uid}`);
+        let responseData;
+        try{
+            responseData = await this._handleError(response, "Get Key Info");
+        }catch{
+            throw Error("User does not exist");
+        }
+        return KeyInfo.from(responseData);
+    }
 }
