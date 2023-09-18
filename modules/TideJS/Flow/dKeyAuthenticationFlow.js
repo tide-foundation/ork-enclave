@@ -21,6 +21,7 @@ import { CmkConvertReply, PreSignInCVKReply, PrismConvertReply, SignInCVKReply }
 import { GetLi } from "../Math/SecretShare.js";
 import PrismConvertResponse from "../Models/PrismConvertResponse.js";
 import OrkInfo from "../Models/OrkInfo.js";
+import { PromiseRace } from "../Tools/Utils.js";
 
 export default class dKeyAuthenticationFlow{
     /**
@@ -59,26 +60,18 @@ export default class dKeyAuthenticationFlow{
         const clients = this.CMKorks.map(ork => new NodeClient(ork.orkURL)) // create node clients
 
         // Here we also find out which ORKs are up
-        const pre_ConvertResponses = clients.map(client => client.Convert(uid, gBlurUser, gBlurPass, this.cmkCommitted, this.prismCommitted));
-        const settledPromises = await Promise.allSettled(pre_ConvertResponses);// determine which promises were fulfilled
-        var activeOrks = []
-        settledPromises.forEach((promise, i) => {
-            if(promise.status === "fulfilled") activeOrks.push(this.CMKorks[i]) // create new ork list on orks which replied
-        }); 
-        if(activeOrks.length < this.threshold){
-            // @ts-ignore
-            if(settledPromises.filter(promise => promise.status === "rejected").some(promise => promise.reason === "Too many attempts")) throw new Error("Too many attempts")
-            else throw new Error("CMK Orks for this account are down");
-        } 
-        this.CMKorks = activeOrks;
+        const pre_ConvertResponses = clients.map((client, i) => client.Convert(i, uid, gBlurUser, gBlurPass, this.cmkCommitted, this.prismCommitted));
+        const unsortedConvertResponses = await PromiseRace(pre_ConvertResponses, this.threshold, "CMK");
+
+        /**@type {{index: number, CMKConvertResponse: string, PrismConvertResponse: PrismConvertResponse}[]} */
+        const ConvertResponses = unsortedConvertResponses.sort((a, b) => a.index - b.index);
+        //remove CMKOrks that are not at indexes in convert responses
+        this.CMKorks = this.CMKorks.filter((_, i) => ConvertResponses.every(resp => resp.index != i)); // if ork at index 0 does not include a response with index 0, remove ork
 
         // Generate lis for CMKOrks based on the ones that replied
         const ids = this.CMKorks.map(ork => BigInt(ork.orkID)); // create lis for all orks that responded
         const lis = ids.map(id => GetLi(id, ids, Point.order));
 
-        /**@type {{CMKConvertResponse: string, PrismConvertResponse: PrismConvertResponse}[]} */
-        // @ts-ignore
-        const ConvertResponses = settledPromises.filter(promise => promise.status === "fulfilled").map(promise => promise.value); // .value will exist here as we have filtered the responses above
         
         const {prismAuthis, deltaTime} = await PrismConvertReply(ConvertResponses.map(c => c.PrismConvertResponse), lis, this.CMKorks.map(c => c.orkPublic), r1, startTime);
         return await CmkConvertReply(uid, ConvertResponses.map(c => c.CMKConvertResponse), ConvertResponses.map(c => c.PrismConvertResponse.EncChallengei), lis, prismAuthis, gCMK, r2, deltaTime, gVVK);
@@ -100,33 +93,25 @@ export default class dKeyAuthenticationFlow{
         const cvkClients = this.CVKorks.map(ork => new NodeClient(ork.orkURL))
 
         const pre_encSig = cmkClients.map((client, i) => client.Authenticate(uid, decryptedChallengei[i], encryptedAuthRequest[i], this.cmkCommitted, this.prismCommitted))
-        const pre_encGRData = cvkClients.map(client => client.PreSignInCVK(vuid, gSessKeyPub, modelRequested));
+       // const pre_encGRData = cvkClients.map(client => client.PreSignInCVK(vuid, gSessKeyPub, modelRequested));
 
         const encSig = await Promise.all(pre_encSig);
 
-        // Determine which CVK orks responded
-        const settledPromises = await Promise.allSettled(pre_encGRData);// determine which promises were fulfilled
-        var activeOrks = []
-        settledPromises.forEach((promise, i) => {
-            if(promise.status === "fulfilled") activeOrks.push(this.CVKorks[i]) // create new ork list on orks which replied
-        }); 
-        if(activeOrks.length < this.threshold){
-            // @ts-ignore
-            if(settledPromises.filter(promise => promise.status === "rejected").some(promise => promise.reason === "Too many attempts")) throw new Error("Too many attempts")
-            else throw new Error("CVK Orks for this account are down");
-        } 
-        this.CVKorks = activeOrks;
+        // Here we also find out which ORKs are up
+        const pre_encGRData = cvkClients.map((client, i) => client.PreSignInCVK(i, vuid, gSessKeyPub, modelRequested));
+        const unsorted_encGRData = await PromiseRace(pre_encGRData, this.threshold, "CVK");
+
+        /**@type {{index: number, encGRData: string}[]} */
+        const encGRData = unsorted_encGRData.sort((a, b) => a.index - b.index);
+        //remove CMKOrks that are not at indexes in convert responses
+        this.CVKorks = this.CVKorks.filter((_, i) => encGRData.every(resp => resp.index != i)); // if ork at index 0 does not include a response with index 0, remove ork
 
         // Generate lis for CVKOrks based on the ones that replied
         const vids = this.CVKorks.map(ork => BigInt(ork.orkID)); 
         const vlis = vids.map(id => GetLi(id, vids, Point.order));
 
-        /**@type {string[]} */
-        // @ts-ignore
-        const encGRData = settledPromises.filter(promise => promise.status === "fulfilled").map(promise => promise.value); // .value will exist here as we have filtered the responses above
-      
         return {
-            ... await PreSignInCVKReply(encSig, encGRData, data_for_PreSignInCVK, this.CVKorks.map(o => o.orkPublic)),
+            ... await PreSignInCVKReply(encSig, encGRData.map(a => a.encGRData), data_for_PreSignInCVK, this.CVKorks.map(o => o.orkPublic)),
             'vlis' : vlis
         };
     }

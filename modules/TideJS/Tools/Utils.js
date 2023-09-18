@@ -137,6 +137,34 @@ export function StringToUint8Array(string) {
 }
 
 /**
+ * @param {Promise[]} promises 
+ * @param {number} n Amount of promises to wait for
+ * @returns 
+ */
+export async function PromiseRace(promises, n, keyType) {
+	const threshold = n;
+    let results = [];
+	let failed = [];
+    for(let i = 0; i < n; i++){
+        const promise = Promise.race(promises);
+		let result;
+		try{
+			result = await promise;
+			results.push(result);
+		}catch(ex){
+			failed.push(ex)
+			n = n + 1; // since the last promise failed
+		}
+        promises = promises.filter(p => p !== promise);
+    }
+	if(results.length == threshold){
+		return results;
+	}else{
+		if(failed.some(ex => ex.message == "Too many attempts")) throw Error("Too many attempts")
+		else throw Error(keyType + " Orks for this account are down");
+	}
+}
+/**
  * @param {string} base64 
  * @returns 
  */

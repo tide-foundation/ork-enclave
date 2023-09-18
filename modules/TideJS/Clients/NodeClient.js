@@ -52,6 +52,7 @@ export default class NodeClient extends ClientBase {
     }
 
     /**
+     * @param {number} index
      * @param {string} uid 
      * @param {Point} gBlurUser
      * @param {Point} gBlurPass
@@ -59,7 +60,7 @@ export default class NodeClient extends ClientBase {
      * @param {boolean} prismCommitted
      * @returns
      */
-    async Convert(uid, gBlurUser, gBlurPass, cmkCommitted=true, prismCommitted=true) {
+    async Convert(index, uid, gBlurUser, gBlurPass, cmkCommitted=true, prismCommitted=true) {
         const data = this._createFormData({ 
             'gBlurUser': gBlurUser.toBase64(), 
             'gBlurPass': gBlurPass.toBase64(), 
@@ -69,6 +70,7 @@ export default class NodeClient extends ClientBase {
         const response = await this._post(`/CMK/Convert?uid=${uid}`, data)
         const responseData = await this._handleError(response, "Convert CMK/Prism");
         return {
+            "index": index,
             "CMKConvertResponse":  responseData.split("|")[0],
             "PrismConvertResponse": PrismConvertResponse.from(responseData.split("|")[1])
         }
@@ -96,12 +98,12 @@ export default class NodeClient extends ClientBase {
     }
 
     /**
-     * 
+     * @param {number} index
      * @param {string} vuid 
      * @param {Point} gSessKeyPub 
      * @param {boolean} modelToSignRequested
      */
-    async PreSignInCVK(vuid, gSessKeyPub, modelToSignRequested=false){
+    async PreSignInCVK(index, vuid, gSessKeyPub, modelToSignRequested=false){
         const data = this._createFormData({ 
             'gSessKeyPub': gSessKeyPub.toBase64(),
             'modelToSignRequested': modelToSignRequested
@@ -109,7 +111,10 @@ export default class NodeClient extends ClientBase {
         const response = await this._post(`/CVK/PreSignIn?uid=${vuid}`, data)
 
         const encGRData = await this._handleError(response, "PreSignInCVK");
-        return encGRData;
+        return {
+            index: index,
+            encGRData: encGRData
+        }
     }
 
     /**
