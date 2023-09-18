@@ -73,8 +73,11 @@ export default class dKeyAuthenticationFlow{
         const lis = ids.map(id => GetLi(id, ids, Point.order));
 
         
-        const {prismAuthis, deltaTime} = await PrismConvertReply(ConvertResponses.map(c => c.PrismConvertResponse), lis, this.CMKorks.map(c => c.orkPublic), r1, startTime);
-        return await CmkConvertReply(uid, ConvertResponses.map(c => c.CMKConvertResponse), ConvertResponses.map(c => c.PrismConvertResponse.EncChallengei), lis, prismAuthis, gCMK, r2, deltaTime, gVVK);
+        const {prismAuthis, deltaTime, decChallengei} = await PrismConvertReply(ConvertResponses.map(c => c.PrismConvertResponse), lis, this.CMKorks.map(c => c.orkPublic), r1, startTime);
+        return{
+            decChallengei: decChallengei,
+            ... await CmkConvertReply(uid, ConvertResponses.map(c => c.CMKConvertResponse), lis, prismAuthis, gCMK, r2, deltaTime, gVVK)
+        }
     }
 
     /**
